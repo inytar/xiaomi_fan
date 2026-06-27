@@ -25,7 +25,12 @@
     },
     "select": {
       "wind_mode": {
-        "default": "mdi:weather-windy"
+        "default": "mdi:weather-windy",
+        "state": {
+          "Straight Wind": "mdi:weather-windy",
+          "Natural Wind": "mdi:sine-wave",
+          "Sleep": "mdi:sleep"
+        }
       },
       "oscillation_angle": {
         "default": "mdi:angle-acute"
