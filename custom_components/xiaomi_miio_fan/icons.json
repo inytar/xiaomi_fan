@@ -27,6 +27,14 @@
       "vertical_oscillation_angle": {
         "default": "mdi:angle-acute"
       }
+    },
+    "light": {
+      "led": {
+        "default": "mdi:led-on",
+        "state": {
+          "off": "mdi:led-off"
+        }
+      }
     }
   }
 }

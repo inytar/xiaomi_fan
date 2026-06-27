@@ -50,6 +50,11 @@
       "vertical_oscillation_angle": {
         "name": "Vertical oscillation angle"
       }
+    },
+    "light": {
+      "led": {
+        "name": "Control lights"
+      }
     }
   },
   "services": {

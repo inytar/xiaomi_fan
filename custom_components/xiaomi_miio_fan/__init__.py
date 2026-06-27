@@ -2,16 +2,17 @@
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-PLATFORMS = ["fan", "switch", "select"]
+PLATFORMS = ["fan", "switch", "select", "light"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Xiaomi Fan from a config entry."""
     # Fan must be set up first so the device is stored in hass.data before
-    # the switch and select platforms try to look it up.
+    # the switch, select, and light platforms try to look it up.
     await hass.config_entries.async_forward_entry_setups(entry, ["fan"])
     await hass.config_entries.async_forward_entry_setups(entry, ["switch"])
     await hass.config_entries.async_forward_entry_setups(entry, ["select"])
+    await hass.config_entries.async_forward_entry_setups(entry, ["light"])
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
     return True
 
