@@ -923,6 +923,8 @@ class XiaomiFan(XiaomiGenericDevice):
         self._preset_mode = None
         self._oscillate = None
         self._natural_mode = False
+        if preset_modes_override is not None:
+            self._wind_mode_options = preset_modes_override
 
         self._state_attrs.update(
             {attribute: None for attribute in self._available_attributes}
