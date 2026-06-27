@@ -56,12 +56,10 @@ class XiaomiFanLedLight(LightEntity):
     async def async_turn_on(self, **kwargs):
         """Turn the LED on."""
         await self._fan_entity.async_set_led_brightness(0)
-        self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs):
         """Turn the LED off."""
         await self._fan_entity.async_set_led_brightness(2)
-        self.async_write_ha_state()
 
     async def async_update(self):
         """State is read from the fan entity's cached attributes on every poll."""

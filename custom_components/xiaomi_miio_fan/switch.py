@@ -75,11 +75,9 @@ class XiaomiFanChildLockSwitch(_XiaomiFanToggleSwitch):
 
     async def async_turn_on(self, **kwargs):
         await self._fan_entity.async_set_child_lock_on()
-        self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs):
         await self._fan_entity.async_set_child_lock_off()
-        self.async_write_ha_state()
 
 
 class XiaomiFanBuzzerSwitch(_XiaomiFanToggleSwitch):
@@ -97,11 +95,9 @@ class XiaomiFanBuzzerSwitch(_XiaomiFanToggleSwitch):
 
     async def async_turn_on(self, **kwargs):
         await self._fan_entity.async_set_buzzer_on()
-        self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs):
         await self._fan_entity.async_set_buzzer_off()
-        self.async_write_ha_state()
 
 
 class XiaomiFanVerticalOscillateSwitch(_XiaomiFanToggleSwitch):
@@ -118,11 +114,9 @@ class XiaomiFanVerticalOscillateSwitch(_XiaomiFanToggleSwitch):
 
     async def async_turn_on(self, **kwargs):
         await self._fan_entity.async_set_vertical_oscillation_on()
-        self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs):
         await self._fan_entity.async_set_vertical_oscillation_off()
-        self.async_write_ha_state()
 
 
 class XiaomiFanIonizerSwitch(_XiaomiFanToggleSwitch):
@@ -142,9 +136,7 @@ class XiaomiFanIonizerSwitch(_XiaomiFanToggleSwitch):
     async def async_turn_on(self, **kwargs):
         """Turn the ionizer on."""
         await self._fan_entity.async_set_anion_on()
-        self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs):
         """Turn the ionizer off."""
         await self._fan_entity.async_set_anion_off()
-        self.async_write_ha_state()
