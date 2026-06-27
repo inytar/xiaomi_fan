@@ -1134,6 +1134,10 @@ class XiaomiFan(XiaomiGenericDevice):
 class XiaomiFanP5(XiaomiFan):
     """Representation of a Xiaomi Pedestal Fan P5."""
 
+    _mode_natural = FanOperationMode.Nature
+    _mode_straight = FanOperationMode.Normal
+    _mode_sleep = None
+
     def __init__(self, name, device, model, unique_id, retries, preset_modes_override):
         """Initialize the fan entity."""
         super().__init__(name, device, model, unique_id, retries, preset_modes_override)
@@ -1199,18 +1203,19 @@ class XiaomiFanP5(XiaomiFan):
                 )
 
     async def async_set_wind_mode(self, wind_mode: str) -> None:
-        """Set the wind mode (Straight Wind / Natural Wind)."""
+        """Set the wind mode (Straight Wind / Natural Wind / Sleep)."""
         _LOGGER.debug("Setting the wind mode to: %s", wind_mode)
 
         if not self._state:
             await self._try_command(
                 "Turning the miio device on failed.", self._device.on
             )
-        mode = (
-            FanOperationMode.Nature
-            if wind_mode == FAN_PRESET_MODE_NATURAL
-            else FanOperationMode.Normal
-        )
+        if wind_mode == FAN_PRESET_MODE_SLEEP and self._mode_sleep is not None:
+            mode = self._mode_sleep
+        elif wind_mode == FAN_PRESET_MODE_NATURAL:
+            mode = self._mode_natural
+        else:
+            mode = self._mode_straight
         await self._try_command(
             "Setting fan mode of the miio device failed.",
             self._device.set_mode,
@@ -1687,11 +1692,6 @@ class XiaomiFanZA5(XiaomiFan):
                 )
 
     @property
-    def percentage(self) -> int | None:
-        """Return the current speed as a percentage."""
-        return self._percentage
-
-    @property
     def speed_count(self) -> int:
         """Return the number of speeds the fan supports."""
         return 4
@@ -2080,10 +2080,46 @@ class FanZA5(MiotDevice):
         return self.set_property("set_move", direction.name.lower())
 
 
-class XiaomiFanP33(XiaomiFanMiot):
+class OperationModeFanP33(Enum):
+    """Operation mode enum for FanP33."""
+
+    Normal = 0
+    Nature = 1
+
+
+class _FanLevelMixin:
+    """Mixin for fans that use discrete fan levels via set_fan_level."""
+
+    _fan_level_zero_indexed: bool = False
+
+    async def async_set_percentage(self, percentage: int) -> None:
+        """Set the speed percentage of the fan."""
+        _LOGGER.debug("Setting the fan speed percentage to: %s", percentage)
+
+        if percentage == 0:
+            await self.async_turn_off()
+            return
+
+        if not self._state:
+            await self._try_command(
+                "Turning the miio device on failed.", self._device.on
+            )
+        level = math.ceil(percentage_to_ranged_value((1, self.speed_count), percentage))
+        if self._fan_level_zero_indexed:
+            level -= 1
+        await self._try_command(
+            "Setting fan level of the miio device failed.",
+            self._device.set_fan_level,
+            level,
+        )
+
+
+class XiaomiFanP33(_FanLevelMixin, XiaomiFanMiot):
     """Representation of a Xiaomi Fan P33."""
 
     _oscillation_angle_options = [30, 60, 90, 120, 140]
+    _mode_natural = OperationModeFanP33.Nature
+    _mode_straight = OperationModeFanP33.Normal
 
     def __init__(self, name, device, model, unique_id, retries, preset_modes_override):
         """Initialize the fan entity."""
@@ -2165,52 +2201,9 @@ class XiaomiFanP33(XiaomiFanMiot):
                 )
 
     @property
-    def percentage(self) -> int | None:
-        """Return the current speed as a percentage."""
-        return self._percentage
-
-    @property
     def speed_count(self) -> int:
         """Return the number of speeds the fan supports."""
         return 4
-
-    async def async_set_wind_mode(self, wind_mode: str) -> None:
-        """Set the wind mode (Straight Wind / Natural Wind)."""
-        _LOGGER.debug("Setting the wind mode to: %s", wind_mode)
-
-        if not self._state:
-            await self._try_command(
-                "Turning the miio device on failed.", self._device.on
-            )
-        mode = (
-            OperationModeFanP33.Nature
-            if wind_mode == FAN_PRESET_MODE_NATURAL
-            else OperationModeFanP33.Normal
-        )
-        await self._try_command(
-            "Setting fan mode of the miio device failed.",
-            self._device.set_mode,
-            mode,
-        )
-
-    async def async_set_percentage(self, percentage: int) -> None:
-        """Set the speed percentage of the fan."""
-        _LOGGER.debug("Setting the fan speed percentage to: %s", percentage)
-
-        if percentage == 0:
-            await self.async_turn_off()
-            return
-
-        if not self._state:
-            await self._try_command(
-                "Turning the miio device on failed.", self._device.on
-            )
-        level = math.ceil(percentage_to_ranged_value((1, 4), percentage))
-        await self._try_command(
-            "Setting fan level of the miio device failed.",
-            self._device.set_fan_level,
-            level,
-        )
 
     async def async_set_natural_mode_on(self):
         """Turn the natural mode on."""
@@ -2233,13 +2226,6 @@ class XiaomiFanP33(XiaomiFanMiot):
             self._device.set_mode,
             OperationModeFanP33.Normal,
         )
-
-
-class OperationModeFanP33(Enum):
-    """Operation mode enum for FanP33."""
-
-    Normal = 0
-    Nature = 1
 
 
 class FanStatusP33(DeviceStatus):
@@ -2441,10 +2427,20 @@ class FanP33(MiotDevice):
         return self.set_property("set_move", value)
 
 
-class XiaomiFanP39(XiaomiFanMiot):
+class OperationModeFanP39(Enum):
+    """Operation mode enum for FanP39."""
+
+    Normal = 0
+    Nature = 1
+    Sleep = 2
+
+
+class XiaomiFanP39(_FanLevelMixin, XiaomiFanMiot):
     """Representation of a Xiaomi Fan P39."""
 
     _oscillation_angle_options = [30, 60, 90, 120, 140]
+    _mode_natural = OperationModeFanP39.Nature
+    _mode_straight = OperationModeFanP39.Normal
 
     def __init__(self, name, device, model, unique_id, retries, preset_modes_override):
         """Initialize the fan entity."""
@@ -2521,52 +2517,9 @@ class XiaomiFanP39(XiaomiFanMiot):
                 )
 
     @property
-    def percentage(self) -> int | None:
-        """Return the current speed as a percentage."""
-        return self._percentage
-
-    @property
     def speed_count(self) -> int:
         """Return the number of speeds the fan supports."""
         return 4
-
-    async def async_set_wind_mode(self, wind_mode: str) -> None:
-        """Set the wind mode (Straight Wind / Natural Wind)."""
-        _LOGGER.debug("Setting the wind mode to: %s", wind_mode)
-
-        if not self._state:
-            await self._try_command(
-                "Turning the miio device on failed.", self._device.on
-            )
-        mode = (
-            OperationModeFanP39.Nature
-            if wind_mode == FAN_PRESET_MODE_NATURAL
-            else OperationModeFanP39.Normal
-        )
-        await self._try_command(
-            "Setting fan mode of the miio device failed.",
-            self._device.set_mode,
-            mode,
-        )
-
-    async def async_set_percentage(self, percentage: int) -> None:
-        """Set the speed percentage of the fan."""
-        _LOGGER.debug("Setting the fan speed percentage to: %s", percentage)
-
-        if percentage == 0:
-            await self.async_turn_off()
-            return
-
-        if not self._state:
-            await self._try_command(
-                "Turning the miio device on failed.", self._device.on
-            )
-        level = math.ceil(percentage_to_ranged_value((1, 4), percentage))
-        await self._try_command(
-            "Setting fan level of the miio device failed.",
-            self._device.set_fan_level,
-            level,
-        )
 
     async def async_set_natural_mode_on(self):
         """Turn the natural mode on."""
@@ -2589,14 +2542,6 @@ class XiaomiFanP39(XiaomiFanMiot):
             self._device.set_mode,
             OperationModeFanP39.Normal,
         )
-
-
-class OperationModeFanP39(Enum):
-    """Operation mode enum for FanP39."""
-
-    Normal = 0
-    Nature = 1
-    Sleep = 2
 
 
 class FanStatusP39(DeviceStatus):
@@ -2996,7 +2941,7 @@ class FanP45(MiotDevice):
             )
 
 
-class XiaomiFanP45(XiaomiFanMiot):
+class XiaomiFanP45(_FanLevelMixin, XiaomiFanMiot):
     """Representation of the Xiaomi Smart Tower Fan 2 (xiaomi.fan.p45)."""
 
     _oscillation_angle_options = [30, 60, 90, 120, 150]
@@ -3005,6 +2950,9 @@ class XiaomiFanP45(XiaomiFanMiot):
         FAN_PRESET_MODE_NATURAL,
         FAN_PRESET_MODE_SLEEP,
     ]
+    _mode_natural = OperationModeFanP45.Natural
+    _mode_straight = OperationModeFanP45.Straight
+    _mode_sleep = OperationModeFanP45.Sleep
 
     def __init__(self, name, device, model, unique_id, retries, preset_modes_override):
         """Initialize the fan entity."""
@@ -3087,55 +3035,9 @@ class XiaomiFanP45(XiaomiFanMiot):
                 )
 
     @property
-    def percentage(self):
-        """Return the current percentage."""
-        return self._percentage
-
-    @property
     def speed_count(self) -> int:
         """Return the number of speeds the fan supports."""
         return 4
-
-    async def async_set_wind_mode(self, wind_mode: str) -> None:
-        """Set the wind mode (Straight Wind / Natural Wind / Sleep)."""
-        _LOGGER.debug("Setting the wind mode to: %s", wind_mode)
-
-        if not self._state:
-            await self._try_command(
-                "Turning the miio device on failed.", self._device.on
-            )
-
-        if wind_mode == FAN_PRESET_MODE_SLEEP:
-            mode = OperationModeFanP45.Sleep
-        elif wind_mode == FAN_PRESET_MODE_NATURAL:
-            mode = OperationModeFanP45.Natural
-        else:
-            mode = OperationModeFanP45.Straight
-        await self._try_command(
-            "Setting fan mode failed.",
-            self._device.set_mode,
-            mode,
-        )
-
-    async def async_set_percentage(self, percentage: int) -> None:
-        """Set the speed percentage of the fan."""
-        _LOGGER.debug("Setting the fan speed percentage to: %s", percentage)
-
-        if percentage == 0:
-            await self.async_turn_off()
-            return
-
-        if not self._state:
-            await self._try_command(
-                "Turning the miio device on failed.", self._device.on
-            )
-
-        level = math.ceil(percentage_to_ranged_value((1, 4), percentage))
-        await self._try_command(
-            "Setting fan level of the miio device failed.",
-            self._device.set_fan_level,
-            level,
-        )
 
     async def async_set_natural_mode_on(self):
         """Turn the natural mode on."""
@@ -3409,6 +3311,9 @@ class XiaomiFanP76(XiaomiFanP33):
 
     _oscillation_angle_options = [30, 60, 90, 120]
     _vertical_oscillation_angle_options = [30, 60, 90, 100]
+    _mode_natural = OperationModeFanP76.Natural
+    _mode_straight = OperationModeFanP76.Straight
+    _fan_level_zero_indexed = True
 
     def __init__(self, name, device, model, unique_id, retries, preset_modes_override):
         """Initialize the fan entity."""
@@ -3514,46 +3419,6 @@ class XiaomiFanP76(XiaomiFanP33):
     def speed_count(self) -> int:
         """Return the number of speeds the fan supports."""
         return 4
-
-    async def async_set_wind_mode(self, wind_mode: str) -> None:
-        """Set the wind mode (Straight Wind / Natural Wind)."""
-        _LOGGER.debug("Setting the wind mode to: %s", wind_mode)
-
-        if not self._state:
-            await self._try_command(
-                "Turning the miio device on failed.", self._device.on
-            )
-
-        mode = (
-            OperationModeFanP76.Natural
-            if wind_mode == FAN_PRESET_MODE_NATURAL
-            else OperationModeFanP76.Straight
-        )
-        await self._try_command(
-            "Setting fan mode failed.",
-            self._device.set_mode,
-            mode,
-        )
-
-    async def async_set_percentage(self, percentage: int) -> None:
-        """Set the speed percentage of the fan."""
-        _LOGGER.debug("Setting the fan speed percentage to: %s", percentage)
-
-        if percentage == 0:
-            await self.async_turn_off()
-            return
-
-        if not self._state:
-            await self._try_command(
-                "Turning the miio device on failed.", self._device.on
-            )
-
-        level = math.ceil(percentage_to_ranged_value((1, 4), percentage)) - 1
-        await self._try_command(
-            "Setting fan level of the miio device failed.",
-            self._device.set_fan_level,
-            level,
-        )
 
     async def async_set_natural_mode_on(self):
         """Turn the natural mode on."""
@@ -3849,6 +3714,8 @@ class XiaomiFanXiaomiP30(XiaomiFanP33):
     """Representation of the Xiaomi Fan P30 (xiaomi.fan.p30)."""
 
     _oscillation_angle_options = [30, 60, 90, 120, 140]
+    _mode_natural = OperationModeFanXiaomiP30.Nature
+    _mode_straight = OperationModeFanXiaomiP30.Normal
 
     def __init__(self, name, device, model, unique_id, retries, preset_modes_override):
         """Initialize the fan entity."""
@@ -3931,46 +3798,6 @@ class XiaomiFanXiaomiP30(XiaomiFanP33):
     def speed_count(self) -> int:
         """Return the number of speeds the fan supports."""
         return 4
-
-    async def async_set_wind_mode(self, wind_mode: str) -> None:
-        """Set the wind mode (Straight Wind / Natural Wind)."""
-        _LOGGER.debug("Setting the wind mode to: %s", wind_mode)
-
-        if not self._state:
-            await self._try_command(
-                "Turning the miio device on failed.", self._device.on
-            )
-
-        mode = (
-            OperationModeFanXiaomiP30.Nature
-            if wind_mode == FAN_PRESET_MODE_NATURAL
-            else OperationModeFanXiaomiP30.Normal
-        )
-        await self._try_command(
-            "Setting fan mode failed.",
-            self._device.set_mode,
-            mode,
-        )
-
-    async def async_set_percentage(self, percentage: int) -> None:
-        """Set the speed percentage of the fan."""
-        _LOGGER.debug("Setting the fan speed percentage to: %s", percentage)
-
-        if percentage == 0:
-            await self.async_turn_off()
-            return
-
-        if not self._state:
-            await self._try_command(
-                "Turning the miio device on failed.", self._device.on
-            )
-
-        level = math.ceil(percentage_to_ranged_value((1, 4), percentage))
-        await self._try_command(
-            "Setting fan level of the miio device failed.",
-            self._device.set_fan_level,
-            level,
-        )
 
     async def async_set_natural_mode_on(self):
         """Turn the natural mode on."""
@@ -4250,6 +4077,9 @@ class XiaomiFanP70(XiaomiFanP33):
 
     _oscillation_angle_options = [30, 60, 90, 120]
     _vertical_oscillation_angle_options = [30, 60, 90, 100]
+    _mode_natural = OperationModeFanP70.Natural
+    _mode_straight = OperationModeFanP70.Straight
+    _fan_level_zero_indexed = True
 
     def __init__(self, name, device, model, unique_id, retries, preset_modes_override):
         """Initialize the fan entity."""
@@ -4355,46 +4185,6 @@ class XiaomiFanP70(XiaomiFanP33):
     def speed_count(self) -> int:
         """Return the number of speeds the fan supports."""
         return 4
-
-    async def async_set_wind_mode(self, wind_mode: str) -> None:
-        """Set the wind mode (Straight Wind / Natural Wind)."""
-        _LOGGER.debug("Setting the wind mode to: %s", wind_mode)
-
-        if not self._state:
-            await self._try_command(
-                "Turning the miio device on failed.", self._device.on
-            )
-
-        mode = (
-            OperationModeFanP70.Natural
-            if wind_mode == FAN_PRESET_MODE_NATURAL
-            else OperationModeFanP70.Straight
-        )
-        await self._try_command(
-            "Setting fan mode failed.",
-            self._device.set_mode,
-            mode,
-        )
-
-    async def async_set_percentage(self, percentage: int) -> None:
-        """Set the speed percentage of the fan."""
-        _LOGGER.debug("Setting the fan speed percentage to: %s", percentage)
-
-        if percentage == 0:
-            await self.async_turn_off()
-            return
-
-        if not self._state:
-            await self._try_command(
-                "Turning the miio device on failed.", self._device.on
-            )
-
-        level = math.ceil(percentage_to_ranged_value((1, 4), percentage)) - 1
-        await self._try_command(
-            "Setting fan level of the miio device failed.",
-            self._device.set_fan_level,
-            level,
-        )
 
     async def async_set_natural_mode_on(self):
         """Turn the natural mode on."""
@@ -4619,6 +4409,10 @@ class Fan2Lite(MiotDevice):
 class XiaomiFan2Lite(XiaomiFanP33):
     """Representation of a Mi Smart Standing Fan 2 Lite (xiaomi.fan.2lite)."""
 
+    _mode_natural = OperationModeFan2Lite.Natural
+    _mode_straight = OperationModeFan2Lite.Straight
+    _fan_level_zero_indexed = True
+
     def __init__(self, name, device, model, unique_id, retries, preset_modes_override):
         """Initialize the fan entity."""
         super().__init__(name, device, model, unique_id, retries, preset_modes_override)
@@ -4703,51 +4497,6 @@ class XiaomiFan2Lite(XiaomiFanP33):
                     ex,
                     self._retry,
                 )
-
-    async def async_set_percentage(self, percentage: int) -> None:
-        """Set the speed percentage of the fan."""
-        _LOGGER.debug("Setting the fan percentage to: %s", percentage)
-
-        if percentage == 0:
-            await self.async_turn_off()
-            return
-
-        level = (
-            math.ceil(
-                percentage_to_ranged_value((1, FAN_2LITE_SPEED_COUNT), percentage)
-            )
-            - 1
-        )
-
-        if not self._state:
-            await self._try_command(
-                "Turning the miio device on failed.", self._device.on
-            )
-        await self._try_command(
-            "Setting fan level of the miio device failed.",
-            self._device.set_fan_level,
-            level,
-        )
-
-    async def async_set_wind_mode(self, wind_mode: str) -> None:
-        """Set the wind mode (Straight Wind / Natural Wind)."""
-        _LOGGER.debug("Setting the wind mode to: %s", wind_mode)
-
-        if not self._state:
-            await self._try_command(
-                "Turning the miio device on failed.", self._device.on
-            )
-
-        mode = (
-            OperationModeFan2Lite.Natural
-            if wind_mode == FAN_PRESET_MODE_NATURAL
-            else OperationModeFan2Lite.Straight
-        )
-        await self._try_command(
-            "Setting fan mode of the miio device failed.",
-            self._device.set_mode,
-            mode,
-        )
 
     async def async_set_natural_mode_on(self):
         """Turn the natural mode on."""
@@ -4853,6 +4602,8 @@ class XiaomiFanP85(XiaomiFanP33):
     """Representation of a Xiaomi Fan P85 (Xiaomi Smart Standing Fan Pro Slim)."""
 
     _oscillation_angle_options = [30, 60, 90]
+    _mode_natural = OperationModeFanP85.Natural
+    _mode_straight = OperationModeFanP85.Straight
 
     def __init__(self, name, device, model, unique_id, retries, preset_modes_override):
         """Initialize the fan entity."""
@@ -4936,46 +4687,6 @@ class XiaomiFanP85(XiaomiFanP33):
     def speed_count(self) -> int:
         """Return the number of speeds the fan supports."""
         return 4
-
-    async def async_set_wind_mode(self, wind_mode: str) -> None:
-        """Set the wind mode (Straight Wind / Natural Wind)."""
-        _LOGGER.debug("Setting the wind mode to: %s", wind_mode)
-
-        if not self._state:
-            await self._try_command(
-                "Turning the miio device on failed.", self._device.on
-            )
-
-        mode = (
-            OperationModeFanP85.Natural
-            if wind_mode == FAN_PRESET_MODE_NATURAL
-            else OperationModeFanP85.Straight
-        )
-        await self._try_command(
-            "Setting fan mode failed.",
-            self._device.set_mode,
-            mode,
-        )
-
-    async def async_set_percentage(self, percentage: int) -> None:
-        """Set the speed percentage of the fan."""
-        _LOGGER.debug("Setting the fan speed percentage to: %s", percentage)
-
-        if percentage == 0:
-            await self.async_turn_off()
-            return
-
-        if not self._state:
-            await self._try_command(
-                "Turning the miio device on failed.", self._device.on
-            )
-
-        level = math.ceil(percentage_to_ranged_value((1, 4), percentage))
-        await self._try_command(
-            "Setting fan level of the miio device failed.",
-            self._device.set_fan_level,
-            level,
-        )
 
     async def async_set_natural_mode_on(self):
         """Turn the natural mode on."""
