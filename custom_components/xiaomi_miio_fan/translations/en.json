@@ -36,6 +36,14 @@
       }
     },
     "select": {
+      "wind_mode": {
+        "name": "Wind mode",
+        "state": {
+          "Straight Wind": "Straight Wind",
+          "Natural Wind": "Natural Wind",
+          "Sleep": "Sleep"
+        }
+      },
       "oscillation_angle": {
         "name": "Oscillation angle",
         "state": {
