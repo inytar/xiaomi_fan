@@ -911,6 +911,8 @@ class XiaomiGenericDevice(FanEntity):
 class XiaomiFan(XiaomiGenericDevice):
     """Representation of a Xiaomi Pedestal Fan."""
 
+    _wind_mode_options: list = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
+
     def __init__(self, name, device, model, unique_id, retries, preset_modes_override):
         """Initialize the fan entity."""
         super().__init__(name, device, model, unique_id, retries, preset_modes_override)
@@ -918,10 +920,6 @@ class XiaomiFan(XiaomiGenericDevice):
         self._device_features = FEATURE_FLAGS_FAN
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN
         self._percentage = None
-        self._preset_modes = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
-        if preset_modes_override is not None:
-            self._preset_modes = preset_modes_override
-
         self._preset_mode = None
         self._oscillate = None
         self._natural_mode = False
@@ -935,7 +933,6 @@ class XiaomiFan(XiaomiGenericDevice):
         """Supported features."""
         return (
             FanEntityFeature.SET_SPEED
-            | FanEntityFeature.PRESET_MODE
             | FanEntityFeature.OSCILLATE
             | FanEntityFeature.DIRECTION
             | FanEntityFeature.TURN_OFF
@@ -997,22 +994,12 @@ class XiaomiFan(XiaomiGenericDevice):
         """Return the current speed."""
         return self._percentage
 
-    @property
-    def preset_modes(self):
-        """Get the list of available preset modes."""
-        return self._preset_modes
-
-    @property
-    def preset_mode(self):
-        """Get the current preset mode."""
-        return self._preset_mode
-
-    async def async_set_preset_mode(self, preset_mode: str) -> None:
+    async def async_set_wind_mode(self, wind_mode: str) -> None:
         """Set the wind mode (Straight Wind / Natural Wind) while preserving speed."""
-        _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
+        _LOGGER.debug("Setting the wind mode to: %s", wind_mode)
 
         speed = self._percentage or 1
-        if preset_mode == FAN_PRESET_MODE_NATURAL:
+        if wind_mode == FAN_PRESET_MODE_NATURAL:
             await self._try_command(
                 "Setting fan natural speed of the miio device failed.",
                 self._device.set_natural_speed,
@@ -1154,10 +1141,6 @@ class XiaomiFanP5(XiaomiFan):
         self._device_features = FEATURE_FLAGS_FAN_P5
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_P5
         self._percentage = None
-        self._preset_modes = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
-        if preset_modes_override is not None:
-            self._preset_modes = preset_modes_override
-
         self._preset_mode = None
         self._oscillate = None
         self._natural_mode = False
@@ -1215,9 +1198,9 @@ class XiaomiFanP5(XiaomiFan):
                     self._retry,
                 )
 
-    async def async_set_preset_mode(self, preset_mode: str) -> None:
+    async def async_set_wind_mode(self, wind_mode: str) -> None:
         """Set the wind mode (Straight Wind / Natural Wind)."""
-        _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
+        _LOGGER.debug("Setting the wind mode to: %s", wind_mode)
 
         if not self._state:
             await self._try_command(
@@ -1225,7 +1208,7 @@ class XiaomiFanP5(XiaomiFan):
             )
         mode = (
             FanOperationMode.Nature
-            if preset_mode == FAN_PRESET_MODE_NATURAL
+            if wind_mode == FAN_PRESET_MODE_NATURAL
             else FanOperationMode.Normal
         )
         await self._try_command(
@@ -1453,10 +1436,6 @@ class XiaomiFan1C(XiaomiFan):
 
         self._device_features = FEATURE_FLAGS_FAN_1C
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_1C
-        self._preset_modes = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
-        if preset_modes_override is not None:
-            self._preset_modes = preset_modes_override
-
         self._oscillate = None
         self._natural_mode = False
         self._speed = None
@@ -1470,7 +1449,6 @@ class XiaomiFan1C(XiaomiFan):
         """Supported features."""
         return (
             FanEntityFeature.SET_SPEED
-            | FanEntityFeature.PRESET_MODE
             | FanEntityFeature.OSCILLATE
             | FanEntityFeature.TURN_OFF
             | FanEntityFeature.TURN_ON
@@ -1536,22 +1514,9 @@ class XiaomiFan1C(XiaomiFan):
         """Return the number of speeds the fan supports."""
         return 3
 
-    @property
-    def preset_modes(self):
-        """Get the list of available preset modes."""
-        return self._preset_modes
-
-    @property
-    def preset_mode(self):
-        """Get the current preset mode."""
-        if self._state:
-            return self._preset_mode
-
-        return None
-
-    async def async_set_preset_mode(self, preset_mode: str) -> None:
+    async def async_set_wind_mode(self, wind_mode: str) -> None:
         """Set the wind mode (Straight Wind / Natural Wind)."""
-        _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
+        _LOGGER.debug("Setting the wind mode to: %s", wind_mode)
 
         if not self._state:
             await self._try_command(
@@ -1559,7 +1524,7 @@ class XiaomiFan1C(XiaomiFan):
             )
         mode = (
             FanOperationMode.Nature
-            if preset_mode == FAN_PRESET_MODE_NATURAL
+            if wind_mode == FAN_PRESET_MODE_NATURAL
             else FanOperationMode.Normal
         )
         await self._try_command(
@@ -1658,9 +1623,6 @@ class XiaomiFanZA5(XiaomiFan):
 
         self._device_features = FEATURE_FLAGS_FAN_ZA5
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_ZA5
-        self._preset_modes = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
-        if preset_modes_override is not None:
-            self._preset_modes = preset_modes_override
 
         self._state_attrs.update(
             {attribute: None for attribute in self._available_attributes}
@@ -1672,7 +1634,6 @@ class XiaomiFanZA5(XiaomiFan):
         return (
             FanEntityFeature.DIRECTION
             | FanEntityFeature.OSCILLATE
-            | FanEntityFeature.PRESET_MODE
             | FanEntityFeature.SET_SPEED
             | FanEntityFeature.TURN_OFF
             | FanEntityFeature.TURN_ON
@@ -1735,21 +1696,9 @@ class XiaomiFanZA5(XiaomiFan):
         """Return the number of speeds the fan supports."""
         return 4
 
-    @property
-    def preset_modes(self):
-        """Return the list of available preset modes."""
-        return self._preset_modes
-
-    @property
-    def preset_mode(self):
-        """Return the current preset mode."""
-        if self._state:
-            return self._preset_mode
-        return None
-
-    async def async_set_preset_mode(self, preset_mode: str) -> None:
+    async def async_set_wind_mode(self, wind_mode: str) -> None:
         """Set the wind mode (Straight Wind / Natural Wind)."""
-        _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
+        _LOGGER.debug("Setting the wind mode to: %s", wind_mode)
 
         if not self._state:
             await self._try_command(
@@ -1757,7 +1706,7 @@ class XiaomiFanZA5(XiaomiFan):
             )
         mode = (
             FanOperationMode.Nature
-            if preset_mode == FAN_PRESET_MODE_NATURAL
+            if wind_mode == FAN_PRESET_MODE_NATURAL
             else FanOperationMode.Normal
         )
         await self._try_command(
@@ -2143,10 +2092,6 @@ class XiaomiFanP33(XiaomiFanMiot):
         self._device_features = FEATURE_FLAGS_FAN_P33
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_P33
         self._percentage = None
-        self._preset_modes = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
-        if preset_modes_override is not None:
-            self._preset_modes = preset_modes_override
-
         self._preset_mode = None
         self._oscillate = None
         self._natural_mode = False
@@ -2161,7 +2106,6 @@ class XiaomiFanP33(XiaomiFanMiot):
         return (
             FanEntityFeature.DIRECTION
             | FanEntityFeature.OSCILLATE
-            | FanEntityFeature.PRESET_MODE
             | FanEntityFeature.SET_SPEED
             | FanEntityFeature.TURN_OFF
             | FanEntityFeature.TURN_ON
@@ -2230,21 +2174,9 @@ class XiaomiFanP33(XiaomiFanMiot):
         """Return the number of speeds the fan supports."""
         return 4
 
-    @property
-    def preset_modes(self):
-        """Return the list of available preset modes."""
-        return self._preset_modes
-
-    @property
-    def preset_mode(self):
-        """Return the current preset mode."""
-        if self._state:
-            return self._preset_mode
-        return None
-
-    async def async_set_preset_mode(self, preset_mode: str) -> None:
+    async def async_set_wind_mode(self, wind_mode: str) -> None:
         """Set the wind mode (Straight Wind / Natural Wind)."""
-        _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
+        _LOGGER.debug("Setting the wind mode to: %s", wind_mode)
 
         if not self._state:
             await self._try_command(
@@ -2252,7 +2184,7 @@ class XiaomiFanP33(XiaomiFanMiot):
             )
         mode = (
             OperationModeFanP33.Nature
-            if preset_mode == FAN_PRESET_MODE_NATURAL
+            if wind_mode == FAN_PRESET_MODE_NATURAL
             else OperationModeFanP33.Normal
         )
         await self._try_command(
@@ -2521,10 +2453,6 @@ class XiaomiFanP39(XiaomiFanMiot):
         self._device_features = FEATURE_FLAGS_FAN_P39
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_P39
         self._percentage = None
-        self._preset_modes = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
-        if preset_modes_override is not None:
-            self._preset_modes = preset_modes_override
-
         self._preset_mode = None
         self._oscillate = None
         self._natural_mode = False
@@ -2539,7 +2467,6 @@ class XiaomiFanP39(XiaomiFanMiot):
         return (
             FanEntityFeature.DIRECTION
             | FanEntityFeature.OSCILLATE
-            | FanEntityFeature.PRESET_MODE
             | FanEntityFeature.SET_SPEED
             | FanEntityFeature.TURN_OFF
             | FanEntityFeature.TURN_ON
@@ -2603,21 +2530,9 @@ class XiaomiFanP39(XiaomiFanMiot):
         """Return the number of speeds the fan supports."""
         return 4
 
-    @property
-    def preset_modes(self):
-        """Return the list of available preset modes."""
-        return self._preset_modes
-
-    @property
-    def preset_mode(self):
-        """Return the current preset mode."""
-        if self._state:
-            return self._preset_mode
-        return None
-
-    async def async_set_preset_mode(self, preset_mode: str) -> None:
+    async def async_set_wind_mode(self, wind_mode: str) -> None:
         """Set the wind mode (Straight Wind / Natural Wind)."""
-        _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
+        _LOGGER.debug("Setting the wind mode to: %s", wind_mode)
 
         if not self._state:
             await self._try_command(
@@ -2625,7 +2540,7 @@ class XiaomiFanP39(XiaomiFanMiot):
             )
         mode = (
             OperationModeFanP39.Nature
-            if preset_mode == FAN_PRESET_MODE_NATURAL
+            if wind_mode == FAN_PRESET_MODE_NATURAL
             else OperationModeFanP39.Normal
         )
         await self._try_command(
@@ -3085,6 +3000,11 @@ class XiaomiFanP45(XiaomiFanMiot):
     """Representation of the Xiaomi Smart Tower Fan 2 (xiaomi.fan.p45)."""
 
     _oscillation_angle_options = [30, 60, 90, 120, 150]
+    _wind_mode_options = [
+        FAN_PRESET_MODE_STRAIGHT,
+        FAN_PRESET_MODE_NATURAL,
+        FAN_PRESET_MODE_SLEEP,
+    ]
 
     def __init__(self, name, device, model, unique_id, retries, preset_modes_override):
         """Initialize the fan entity."""
@@ -3093,14 +3013,6 @@ class XiaomiFanP45(XiaomiFanMiot):
         self._device_features = FEATURE_FLAGS_FAN_P45
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_P45
         self._percentage = None
-        self._preset_modes = [
-            FAN_PRESET_MODE_STRAIGHT,
-            FAN_PRESET_MODE_NATURAL,
-            FAN_PRESET_MODE_SLEEP,
-        ]
-        if preset_modes_override is not None:
-            self._preset_modes = preset_modes_override
-
         self._preset_mode = None
         self._oscillate = None
         self._natural_mode = False
@@ -3115,7 +3027,6 @@ class XiaomiFanP45(XiaomiFanMiot):
         """Return supported features."""
         return (
             FanEntityFeature.OSCILLATE
-            | FanEntityFeature.PRESET_MODE
             | FanEntityFeature.SET_SPEED
             | FanEntityFeature.TURN_OFF
             | FanEntityFeature.TURN_ON
@@ -3185,30 +3096,18 @@ class XiaomiFanP45(XiaomiFanMiot):
         """Return the number of speeds the fan supports."""
         return 4
 
-    @property
-    def preset_modes(self):
-        """Return the list of available preset modes."""
-        return self._preset_modes
-
-    @property
-    def preset_mode(self):
-        """Return the current preset mode."""
-        if self._state:
-            return self._preset_mode
-        return None
-
-    async def async_set_preset_mode(self, preset_mode: str) -> None:
-        """Set the preset mode of the fan."""
-        _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
+    async def async_set_wind_mode(self, wind_mode: str) -> None:
+        """Set the wind mode (Straight Wind / Natural Wind / Sleep)."""
+        _LOGGER.debug("Setting the wind mode to: %s", wind_mode)
 
         if not self._state:
             await self._try_command(
                 "Turning the miio device on failed.", self._device.on
             )
 
-        if preset_mode == FAN_PRESET_MODE_SLEEP:
+        if wind_mode == FAN_PRESET_MODE_SLEEP:
             mode = OperationModeFanP45.Sleep
-        elif preset_mode == FAN_PRESET_MODE_NATURAL:
+        elif wind_mode == FAN_PRESET_MODE_NATURAL:
             mode = OperationModeFanP45.Natural
         else:
             mode = OperationModeFanP45.Straight
@@ -3518,10 +3417,6 @@ class XiaomiFanP76(XiaomiFanP33):
         self._device_features = FEATURE_FLAGS_FAN_P76
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_P76
         self._percentage = None
-        self._preset_modes = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
-        if preset_modes_override is not None:
-            self._preset_modes = preset_modes_override
-
         self._preset_mode = None
         self._oscillate = None
         self._vertical_oscillate = None
@@ -3537,7 +3432,6 @@ class XiaomiFanP76(XiaomiFanP33):
         """Return supported features."""
         return (
             FanEntityFeature.OSCILLATE
-            | FanEntityFeature.PRESET_MODE
             | FanEntityFeature.SET_SPEED
             | FanEntityFeature.DIRECTION
             | FanEntityFeature.TURN_OFF
@@ -3621,9 +3515,9 @@ class XiaomiFanP76(XiaomiFanP33):
         """Return the number of speeds the fan supports."""
         return 4
 
-    async def async_set_preset_mode(self, preset_mode: str) -> None:
-        """Set the preset mode of the fan."""
-        _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
+    async def async_set_wind_mode(self, wind_mode: str) -> None:
+        """Set the wind mode (Straight Wind / Natural Wind)."""
+        _LOGGER.debug("Setting the wind mode to: %s", wind_mode)
 
         if not self._state:
             await self._try_command(
@@ -3632,7 +3526,7 @@ class XiaomiFanP76(XiaomiFanP33):
 
         mode = (
             OperationModeFanP76.Natural
-            if preset_mode == FAN_PRESET_MODE_NATURAL
+            if wind_mode == FAN_PRESET_MODE_NATURAL
             else OperationModeFanP76.Straight
         )
         await self._try_command(
@@ -3963,10 +3857,6 @@ class XiaomiFanXiaomiP30(XiaomiFanP33):
         self._device_features = FEATURE_FLAGS_FAN_XIAOMI_P30
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_XIAOMI_P30
         self._percentage = None
-        self._preset_modes = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
-        if preset_modes_override is not None:
-            self._preset_modes = preset_modes_override
-
         self._preset_mode = None
         self._oscillate = None
         self._natural_mode = False
@@ -3980,7 +3870,6 @@ class XiaomiFanXiaomiP30(XiaomiFanP33):
         """Return supported features."""
         return (
             FanEntityFeature.OSCILLATE
-            | FanEntityFeature.PRESET_MODE
             | FanEntityFeature.SET_SPEED
             | FanEntityFeature.TURN_OFF
             | FanEntityFeature.TURN_ON
@@ -4043,9 +3932,9 @@ class XiaomiFanXiaomiP30(XiaomiFanP33):
         """Return the number of speeds the fan supports."""
         return 4
 
-    async def async_set_preset_mode(self, preset_mode: str) -> None:
-        """Set the preset mode of the fan."""
-        _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
+    async def async_set_wind_mode(self, wind_mode: str) -> None:
+        """Set the wind mode (Straight Wind / Natural Wind)."""
+        _LOGGER.debug("Setting the wind mode to: %s", wind_mode)
 
         if not self._state:
             await self._try_command(
@@ -4054,7 +3943,7 @@ class XiaomiFanXiaomiP30(XiaomiFanP33):
 
         mode = (
             OperationModeFanXiaomiP30.Nature
-            if preset_mode == FAN_PRESET_MODE_NATURAL
+            if wind_mode == FAN_PRESET_MODE_NATURAL
             else OperationModeFanXiaomiP30.Normal
         )
         await self._try_command(
@@ -4369,10 +4258,6 @@ class XiaomiFanP70(XiaomiFanP33):
         self._device_features = FEATURE_FLAGS_FAN_P70
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_P70
         self._percentage = None
-        self._preset_modes = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
-        if preset_modes_override is not None:
-            self._preset_modes = preset_modes_override
-
         self._preset_mode = None
         self._oscillate = None
         self._vertical_oscillate = None
@@ -4388,7 +4273,6 @@ class XiaomiFanP70(XiaomiFanP33):
         """Return supported features."""
         return (
             FanEntityFeature.OSCILLATE
-            | FanEntityFeature.PRESET_MODE
             | FanEntityFeature.SET_SPEED
             | FanEntityFeature.TURN_OFF
             | FanEntityFeature.TURN_ON
@@ -4472,9 +4356,9 @@ class XiaomiFanP70(XiaomiFanP33):
         """Return the number of speeds the fan supports."""
         return 4
 
-    async def async_set_preset_mode(self, preset_mode: str) -> None:
-        """Set the preset mode of the fan."""
-        _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
+    async def async_set_wind_mode(self, wind_mode: str) -> None:
+        """Set the wind mode (Straight Wind / Natural Wind)."""
+        _LOGGER.debug("Setting the wind mode to: %s", wind_mode)
 
         if not self._state:
             await self._try_command(
@@ -4483,7 +4367,7 @@ class XiaomiFanP70(XiaomiFanP33):
 
         mode = (
             OperationModeFanP70.Natural
-            if preset_mode == FAN_PRESET_MODE_NATURAL
+            if wind_mode == FAN_PRESET_MODE_NATURAL
             else OperationModeFanP70.Straight
         )
         await self._try_command(
@@ -4742,10 +4626,6 @@ class XiaomiFan2Lite(XiaomiFanP33):
         self._device_features = FEATURE_FLAGS_FAN_2LITE
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_2LITE
         self._percentage = None
-        self._preset_modes = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
-        if preset_modes_override is not None:
-            self._preset_modes = preset_modes_override
-
         self._preset_mode = None
         self._oscillate = None
         self._natural_mode = False
@@ -4760,7 +4640,6 @@ class XiaomiFan2Lite(XiaomiFanP33):
         """Return supported features."""
         return (
             FanEntityFeature.OSCILLATE
-            | FanEntityFeature.PRESET_MODE
             | FanEntityFeature.SET_SPEED
             | FanEntityFeature.TURN_OFF
             | FanEntityFeature.TURN_ON
@@ -4850,9 +4729,9 @@ class XiaomiFan2Lite(XiaomiFanP33):
             level,
         )
 
-    async def async_set_preset_mode(self, preset_mode: str) -> None:
-        """Set the preset mode of the fan."""
-        _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
+    async def async_set_wind_mode(self, wind_mode: str) -> None:
+        """Set the wind mode (Straight Wind / Natural Wind)."""
+        _LOGGER.debug("Setting the wind mode to: %s", wind_mode)
 
         if not self._state:
             await self._try_command(
@@ -4861,7 +4740,7 @@ class XiaomiFan2Lite(XiaomiFanP33):
 
         mode = (
             OperationModeFan2Lite.Natural
-            if preset_mode == FAN_PRESET_MODE_NATURAL
+            if wind_mode == FAN_PRESET_MODE_NATURAL
             else OperationModeFan2Lite.Straight
         )
         await self._try_command(
@@ -4982,10 +4861,6 @@ class XiaomiFanP85(XiaomiFanP33):
         self._device_features = FEATURE_FLAGS_FAN_P85
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_P85
         self._percentage = None
-        self._preset_modes = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
-        if preset_modes_override is not None:
-            self._preset_modes = preset_modes_override
-
         self._preset_mode = None
         self._oscillate = None
         self._natural_mode = False
@@ -5000,7 +4875,6 @@ class XiaomiFanP85(XiaomiFanP33):
         """Return supported features."""
         return (
             FanEntityFeature.OSCILLATE
-            | FanEntityFeature.PRESET_MODE
             | FanEntityFeature.SET_SPEED
             | FanEntityFeature.TURN_OFF
             | FanEntityFeature.TURN_ON
@@ -5063,9 +4937,9 @@ class XiaomiFanP85(XiaomiFanP33):
         """Return the number of speeds the fan supports."""
         return 4
 
-    async def async_set_preset_mode(self, preset_mode: str) -> None:
-        """Set the preset mode of the fan."""
-        _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
+    async def async_set_wind_mode(self, wind_mode: str) -> None:
+        """Set the wind mode (Straight Wind / Natural Wind)."""
+        _LOGGER.debug("Setting the wind mode to: %s", wind_mode)
 
         if not self._state:
             await self._try_command(
@@ -5074,7 +4948,7 @@ class XiaomiFanP85(XiaomiFanP33):
 
         mode = (
             OperationModeFanP85.Natural
-            if preset_mode == FAN_PRESET_MODE_NATURAL
+            if wind_mode == FAN_PRESET_MODE_NATURAL
             else OperationModeFanP85.Straight
         )
         await self._try_command(

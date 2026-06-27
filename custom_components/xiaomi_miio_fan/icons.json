@@ -24,6 +24,9 @@
       }
     },
     "select": {
+      "wind_mode": {
+        "default": "mdi:weather-windy"
+      },
       "oscillation_angle": {
         "default": "mdi:angle-acute"
       },

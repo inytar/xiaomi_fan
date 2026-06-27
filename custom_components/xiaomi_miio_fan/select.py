@@ -10,6 +10,7 @@ from .fan import (
     ATTR_ANGLE,
     ATTR_DELAY_OFF_COUNTDOWN,
     ATTR_VERTICAL_ANGLE,
+    FEATURE_SET_NATURAL_MODE,
     FEATURE_SET_OSCILLATION_ANGLE,
     FEATURE_SET_VERTICAL_OSCILLATION_ANGLE,
 )
@@ -28,6 +29,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
         return
 
     entities = []
+    if fan_entity._device_features & FEATURE_SET_NATURAL_MODE:
+        entities.append(XiaomiFanWindModeSelect(fan_entity))
     if fan_entity._device_features & FEATURE_SET_OSCILLATION_ANGLE:
         entities.append(XiaomiFanOscillationAngleSelect(fan_entity))
     if fan_entity._device_features & FEATURE_SET_VERTICAL_OSCILLATION_ANGLE:
@@ -56,6 +59,27 @@ class _XiaomiFanAngleSelect(SelectEntity):
 
     async def async_update(self):
         """State is read from the fan entity's cached attributes on every poll."""
+
+
+class XiaomiFanWindModeSelect(_XiaomiFanAngleSelect):
+    """Select entity for the fan's wind mode (Straight Wind / Natural Wind / Sleep)."""
+
+    _attr_translation_key = "wind_mode"
+
+    def __init__(self, fan_entity):
+        """Initialize the wind mode select."""
+        super().__init__(fan_entity, "wind_mode")
+        self._attr_options = fan_entity._wind_mode_options
+
+    @property
+    def current_option(self):
+        """Return the currently active wind mode."""
+        return self._fan_entity._preset_mode
+
+    async def async_select_option(self, option: str) -> None:
+        """Set the wind mode."""
+        await self._fan_entity.async_set_wind_mode(option)
+        self.async_write_ha_state()
 
 
 class XiaomiFanOscillationAngleSelect(_XiaomiFanAngleSelect):
