@@ -48,17 +48,17 @@ class XiaomiFanConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             await self.async_set_unique_id(host)
             self._abort_if_unique_id_configured()
 
-            try:
-                miio_device = Device(host, token)
-                device_info = await self.hass.async_add_executor_job(miio_device.info)
-                if model is None:
+            if model is None:
+                try:
+                    miio_device = Device(host, token)
+                    device_info = await self.hass.async_add_executor_job(miio_device.info)
                     model = device_info.model
                     user_input[CONF_MODEL] = model
-            except DeviceException:
-                errors["base"] = "cannot_connect"
-            except Exception:
-                _LOGGER.exception("Unexpected exception during config flow")
-                errors["base"] = "unknown"
+                except DeviceException:
+                    errors["base"] = "cannot_connect"
+                except Exception:
+                    _LOGGER.exception("Unexpected exception during config flow")
+                    errors["base"] = "unknown"
 
             if not errors:
                 name = user_input.get(CONF_NAME) or DEFAULT_NAME
