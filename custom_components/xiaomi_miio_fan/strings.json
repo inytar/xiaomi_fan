@@ -83,6 +83,20 @@
       "led": {
         "name": "Control lights"
       }
+    },
+    "button": {
+      "move_left": {
+        "name": "Move left"
+      },
+      "move_right": {
+        "name": "Move right"
+      },
+      "move_up": {
+        "name": "Move up"
+      },
+      "move_down": {
+        "name": "Move down"
+      }
     }
   },
   "services": {

@@ -41,6 +41,20 @@
           "off": "mdi:led-off"
         }
       }
+    },
+    "button": {
+      "move_left": {
+        "default": "mdi:arrow-left"
+      },
+      "move_right": {
+        "default": "mdi:arrow-right"
+      },
+      "move_up": {
+        "default": "mdi:arrow-up"
+      },
+      "move_down": {
+        "default": "mdi:arrow-down"
+      }
     }
   }
 }
