@@ -31,6 +31,19 @@
       }
     }
   },
+  "entity": {
+    "switch": {
+      "child_lock": {
+        "name": "Child lock"
+      },
+      "buzzer": {
+        "name": "Buzzer"
+      },
+      "vertical_oscillate": {
+        "name": "Vertical oscillation"
+      }
+    }
+  },
   "services": {
     "fan_set_buzzer_on": {
       "name": "Set buzzer on",

@@ -20,6 +20,19 @@
       "already_configured": "This device is already configured."
     }
   },
+  "entity": {
+    "switch": {
+      "child_lock": {
+        "name": "Child lock"
+      },
+      "buzzer": {
+        "name": "Buzzer"
+      },
+      "vertical_oscillate": {
+        "name": "Vertical oscillation"
+      }
+    }
+  },
   "options": {
     "step": {
       "init": {
