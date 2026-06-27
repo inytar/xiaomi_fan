@@ -895,6 +895,8 @@ class XiaomiGenericDevice(FanEntity):
     """Representation of a generic Xiaomi device."""
 
     _enable_turn_on_off_backwards_compatibility = False
+    _attr_has_entity_name = True
+    _attr_name = None
     _oscillation_angle_options: list = [30, 60, 90, 120]
     _vertical_oscillation_angle_options: list = []
 
@@ -939,11 +941,6 @@ class XiaomiGenericDevice(FanEntity):
             manufacturer="Xiaomi",
             model=self._model,
         )
-
-    @property
-    def name(self):
-        """Return the name of the device if any."""
-        return self._name
 
     @property
     def available(self):
