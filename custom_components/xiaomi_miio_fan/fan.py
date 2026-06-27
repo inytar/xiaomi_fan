@@ -23,8 +23,6 @@ from homeassistant.exceptions import PlatformNotReady
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.util.percentage import (
-    ordered_list_item_to_percentage,
-    percentage_to_ordered_list_item,
     percentage_to_ranged_value,
     ranged_value_to_percentage,
 )
@@ -48,7 +46,11 @@ from .const import (
     DEFAULT_RETRIES,
     DOMAIN,
     MODEL_FAN_1C,
+    MODEL_FAN_2LITE,
     MODEL_FAN_LESHOW_SS4,
+    MODEL_FAN_P5,
+    MODEL_FAN_P8,
+    MODEL_FAN_P9,
     MODEL_FAN_P10,
     MODEL_FAN_P11,
     MODEL_FAN_P15,
@@ -56,22 +58,18 @@ from .const import (
     MODEL_FAN_P30,
     MODEL_FAN_P33,
     MODEL_FAN_P39,
-    MODEL_FAN_P5,
+    MODEL_FAN_P45,
     MODEL_FAN_P70,
     MODEL_FAN_P76,
-    MODEL_FAN_P8,
-    MODEL_FAN_P9,
+    MODEL_FAN_P85,
     MODEL_FAN_SA1,
     MODEL_FAN_V2,
     MODEL_FAN_V3,
+    MODEL_FAN_XIAOMI_P30,
     MODEL_FAN_ZA1,
     MODEL_FAN_ZA3,
     MODEL_FAN_ZA4,
     MODEL_FAN_ZA5,
-    MODEL_FAN_P45,
-    MODEL_FAN_XIAOMI_P30,
-    MODEL_FAN_P85,
-    MODEL_FAN_2LITE,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -315,177 +313,9 @@ AVAILABLE_ATTRIBUTES_FAN_ZA5 = {
     ATTR_IONIZER: "anion",
 }
 
-FAN_SPEED_LEVEL1 = "Level 1"
-FAN_SPEED_LEVEL2 = "Level 2"
-FAN_SPEED_LEVEL3 = "Level 3"
-FAN_SPEED_LEVEL4 = "Level 4"
-
-FAN_SPEED_NATURAL1 = "Natural 1"
-FAN_SPEED_NATURAL2 = "Natural 2"
-FAN_SPEED_NATURAL3 = "Natural 3"
-FAN_SPEED_NATURAL4 = "Natural 4"
-
-FAN_PRESET_MODES = {
-    SPEED_OFF: range(0, 1),
-    FAN_SPEED_LEVEL1: range(1, 26),
-    FAN_SPEED_LEVEL2: range(26, 51),
-    FAN_SPEED_LEVEL3: range(51, 76),
-    FAN_SPEED_LEVEL4: range(76, 101),
-}
-
-FAN_PRESET_MODE_VALUES = {
-    SPEED_OFF: 0,
-    FAN_SPEED_LEVEL1: 1,
-    FAN_SPEED_LEVEL2: 35,
-    FAN_SPEED_LEVEL3: 74,
-    FAN_SPEED_LEVEL4: 100,
-}
-
-FAN_PRESET_MODE_VALUES_P5 = {
-    SPEED_OFF: 0,
-    FAN_SPEED_LEVEL1: 1,
-    FAN_SPEED_LEVEL2: 35,
-    FAN_SPEED_LEVEL3: 70,
-    FAN_SPEED_LEVEL4: 100,
-}
-
-FAN_PRESET_MODES_1C = {
-    SPEED_OFF: 0,
-    FAN_SPEED_LEVEL1: 1,
-    FAN_SPEED_LEVEL2: 2,
-    FAN_SPEED_LEVEL3: 3,
-}
-
-FAN_PRESET_MODES_ZA5 = {
-    SPEED_OFF: 0,
-    FAN_SPEED_LEVEL1: 25,
-    FAN_SPEED_LEVEL2: 50,
-    FAN_SPEED_LEVEL3: 75,
-    FAN_SPEED_LEVEL4: 100,
-}
-
-FAN_PRESET_MODES_P33 = {
-    SPEED_OFF: 0,
-    FAN_SPEED_LEVEL1: 1,
-    FAN_SPEED_LEVEL2: 35,
-    FAN_SPEED_LEVEL3: 70,
-    FAN_SPEED_LEVEL4: 100,
-}
-
-FAN_PRESET_MODES_P39 = {
-    SPEED_OFF: 0,
-    FAN_SPEED_LEVEL1: 1,
-    FAN_SPEED_LEVEL2: 35,
-    FAN_SPEED_LEVEL3: 70,
-    FAN_SPEED_LEVEL4: 100,
-}
-
-FAN_SPEEDS_1C = list(FAN_PRESET_MODES_1C)
-FAN_SPEEDS_1C.remove(SPEED_OFF)
-
-# FIXME: Add speed level 4
-FAN_SPEEDS_ZA5 = list(FAN_PRESET_MODES_ZA5)
-FAN_SPEEDS_ZA5.remove(SPEED_OFF)
-
-FAN_SPEEDS_P33 = list(FAN_PRESET_MODES_P33)
-FAN_SPEEDS_P33.remove(SPEED_OFF)
-
-FAN_SPEEDS_P39 = list(FAN_PRESET_MODES_P39)
-FAN_SPEEDS_P39.remove(SPEED_OFF)
-
-FAN_PRESET_MODES_P76 = {
-    SPEED_OFF: -1,
-    FAN_SPEED_LEVEL1: 0,
-    FAN_SPEED_LEVEL2: 1,
-    FAN_SPEED_LEVEL3: 2,
-    FAN_SPEED_LEVEL4: 3,
-    FAN_SPEED_NATURAL1: 0,
-    FAN_SPEED_NATURAL2: 1,
-    FAN_SPEED_NATURAL3: 2,
-    FAN_SPEED_NATURAL4: 3,
-}
-
-FAN_SPEEDS_P76 = [
-    FAN_SPEED_LEVEL1,
-    FAN_SPEED_LEVEL2,
-    FAN_SPEED_LEVEL3,
-    FAN_SPEED_LEVEL4,
-    FAN_SPEED_NATURAL1,
-    FAN_SPEED_NATURAL2,
-    FAN_SPEED_NATURAL3,
-    FAN_SPEED_NATURAL4,
-]
-
-FAN_PRESET_MODES_XIAOMI_P30 = {
-    SPEED_OFF: -1,
-    FAN_SPEED_LEVEL1: 1,
-    FAN_SPEED_LEVEL2: 2,
-    FAN_SPEED_LEVEL3: 3,
-    FAN_SPEED_LEVEL4: 4,
-    FAN_SPEED_NATURAL1: 1,
-    FAN_SPEED_NATURAL2: 2,
-    FAN_SPEED_NATURAL3: 3,
-    FAN_SPEED_NATURAL4: 4,
-}
-
-FAN_PRESET_MODES_P70 = {
-    SPEED_OFF: -1,
-    FAN_SPEED_LEVEL1: 0,
-    FAN_SPEED_LEVEL2: 1,
-    FAN_SPEED_LEVEL3: 2,
-    FAN_SPEED_LEVEL4: 3,
-}
-
-FAN_SPEEDS_P70 = [
-    FAN_SPEED_LEVEL1,
-    FAN_SPEED_LEVEL2,
-    FAN_SPEED_LEVEL3,
-    FAN_SPEED_LEVEL4,
-]
-
-FAN_PRESET_MODES_P85 = {
-    SPEED_OFF: -1,
-    FAN_SPEED_LEVEL1: 1,
-    FAN_SPEED_LEVEL2: 2,
-    FAN_SPEED_LEVEL3: 3,
-    FAN_SPEED_LEVEL4: 4,
-    FAN_SPEED_NATURAL1: 1,
-    FAN_SPEED_NATURAL2: 2,
-    FAN_SPEED_NATURAL3: 3,
-    FAN_SPEED_NATURAL4: 4,
-}
-
+FAN_PRESET_MODE_STRAIGHT = "Straight Wind"
+FAN_PRESET_MODE_NATURAL = "Natural Wind"
 FAN_PRESET_MODE_SLEEP = "Sleep"
-
-# Smart Tower Fan 2 (xiaomi.fan.p45) — fan-level enum: Level1..Level4 (1..4).
-# Sleep is a standalone mode (no level selector) and is treated as a single
-# preset that maps to mode=Sleep.
-FAN_PRESET_MODES_P45 = {
-    SPEED_OFF: -1,
-    FAN_SPEED_LEVEL1: 1,
-    FAN_SPEED_LEVEL2: 2,
-    FAN_SPEED_LEVEL3: 3,
-    FAN_SPEED_LEVEL4: 4,
-    FAN_SPEED_NATURAL1: 1,
-    FAN_SPEED_NATURAL2: 2,
-    FAN_SPEED_NATURAL3: 3,
-    FAN_SPEED_NATURAL4: 4,
-    FAN_PRESET_MODE_SLEEP: 1,
-}
-
-FAN_SPEEDS_P45 = [
-    FAN_SPEED_LEVEL1,
-    FAN_SPEED_LEVEL2,
-    FAN_SPEED_LEVEL3,
-    FAN_SPEED_LEVEL4,
-    FAN_SPEED_NATURAL1,
-    FAN_SPEED_NATURAL2,
-    FAN_SPEED_NATURAL3,
-    FAN_SPEED_NATURAL4,
-    FAN_PRESET_MODE_SLEEP,
-]
-
-FAN_PRESET_MODES_2LITE = [FAN_PRESET_MODE_SLEEP]
 
 FAN_2LITE_SPEED_COUNT = 3
 
@@ -714,7 +544,16 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     model = config.get(CONF_MODEL)
     retries = config[CONF_RETRIES]
     preset_modes_override = config.get(CONF_PRESET_MODES_OVERRIDE)
-    await _async_setup_device(hass, host, token, name, model, retries, preset_modes_override, async_add_entities)
+    await _async_setup_device(
+        hass,
+        host,
+        token,
+        name,
+        model,
+        retries,
+        preset_modes_override,
+        async_add_entities,
+    )
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
@@ -727,14 +566,28 @@ async def async_setup_entry(hass, entry, async_add_entities):
     preset_modes_override = entry.options.get(CONF_PRESET_MODES_OVERRIDE)
     fallback_unique_id = entry.unique_id or host
     await _async_setup_device(
-        hass, host, token, name, model, retries, preset_modes_override,
-        async_add_entities, fallback_unique_id=fallback_unique_id,
+        hass,
+        host,
+        token,
+        name,
+        model,
+        retries,
+        preset_modes_override,
+        async_add_entities,
+        fallback_unique_id=fallback_unique_id,
     )
 
 
 async def _async_setup_device(
-    hass, host, token, name, model, retries, preset_modes_override,
-    async_add_entities, fallback_unique_id=None,
+    hass,
+    host,
+    token,
+    name,
+    model,
+    retries,
+    preset_modes_override,
+    async_add_entities,
+    fallback_unique_id=None,
 ):
     """Set up a miio fan device and register services."""
     if DATA_KEY not in hass.data:
@@ -1065,7 +918,7 @@ class XiaomiFan(XiaomiGenericDevice):
         self._device_features = FEATURE_FLAGS_FAN
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN
         self._percentage = None
-        self._preset_modes = list(FAN_PRESET_MODES)
+        self._preset_modes = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
         if preset_modes_override is not None:
             self._preset_modes = preset_modes_override
 
@@ -1104,19 +957,14 @@ class XiaomiFan(XiaomiGenericDevice):
             self._oscillate = state.oscillate
             self._natural_mode = state.natural_speed != 0
             self._state = state.is_on
-
-            if self._natural_mode:
-                for preset_mode, range in FAN_PRESET_MODES.items():
-                    if state.natural_speed in range:
-                        self._preset_mode = preset_mode
-                        self._percentage = state.natural_speed
-                        break
-            else:
-                for preset_mode, range in FAN_PRESET_MODES.items():
-                    if state.direct_speed in range:
-                        self._preset_mode = preset_mode
-                        self._percentage = state.direct_speed
-                        break
+            self._percentage = (
+                state.natural_speed if self._natural_mode else state.direct_speed
+            )
+            self._preset_mode = (
+                FAN_PRESET_MODE_NATURAL
+                if self._natural_mode
+                else FAN_PRESET_MODE_STRAIGHT
+            )
 
             self._state_attrs.update(
                 {
@@ -1160,24 +1008,21 @@ class XiaomiFan(XiaomiGenericDevice):
         return self._preset_mode
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
-        """Set the preset mode of the fan."""
+        """Set the wind mode (Straight Wind / Natural Wind) while preserving speed."""
         _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
 
-        if preset_mode == SPEED_OFF:
-            await self.async_turn_off()
-            return
-
-        if self._natural_mode:
+        speed = self._percentage or 1
+        if preset_mode == FAN_PRESET_MODE_NATURAL:
             await self._try_command(
-                "Setting fan speed of the miio device failed.",
+                "Setting fan natural speed of the miio device failed.",
                 self._device.set_natural_speed,
-                FAN_PRESET_MODE_VALUES[preset_mode],
+                speed,
             )
         else:
             await self._try_command(
-                "Setting fan speed of the miio device failed.",
+                "Setting fan direct speed of the miio device failed.",
                 self._device.set_direct_speed,
-                FAN_PRESET_MODE_VALUES[preset_mode],
+                speed,
             )
 
     async def async_set_percentage(self, percentage: int) -> None:
@@ -1309,7 +1154,7 @@ class XiaomiFanP5(XiaomiFan):
         self._device_features = FEATURE_FLAGS_FAN_P5
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_P5
         self._percentage = None
-        self._preset_modes = list(FAN_PRESET_MODES)
+        self._preset_modes = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
         if preset_modes_override is not None:
             self._preset_modes = preset_modes_override
 
@@ -1337,11 +1182,11 @@ class XiaomiFanP5(XiaomiFan):
             self._oscillate = state.oscillate
             self._natural_mode = state.mode == FanOperationMode.Nature
             self._state = state.is_on
-
-            for preset_mode, range in FAN_PRESET_MODES.items():
-                if state.speed in range:
-                    self._preset_mode = preset_mode
-                    break
+            self._preset_mode = (
+                FAN_PRESET_MODE_NATURAL
+                if self._natural_mode
+                else FAN_PRESET_MODE_STRAIGHT
+            )
 
             self._state_attrs.update(
                 {
@@ -1371,21 +1216,22 @@ class XiaomiFanP5(XiaomiFan):
                 )
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
-        """Set the preset mode of the fan."""
+        """Set the wind mode (Straight Wind / Natural Wind)."""
         _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
-
-        if preset_mode == SPEED_OFF:
-            await self.async_turn_off()
-            return
 
         if not self._state:
             await self._try_command(
                 "Turning the miio device on failed.", self._device.on
             )
+        mode = (
+            FanOperationMode.Nature
+            if preset_mode == FAN_PRESET_MODE_NATURAL
+            else FanOperationMode.Normal
+        )
         await self._try_command(
-            "Setting fan speed of the miio device failed.",
-            self._device.set_speed,
-            FAN_PRESET_MODE_VALUES_P5[preset_mode],
+            "Setting fan mode of the miio device failed.",
+            self._device.set_mode,
+            mode,
         )
 
     async def async_set_percentage(self, percentage: int) -> None:
@@ -1607,11 +1453,13 @@ class XiaomiFan1C(XiaomiFan):
 
         self._device_features = FEATURE_FLAGS_FAN_1C
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_1C
-        self._preset_modes = list(FAN_PRESET_MODES_1C)
+        self._preset_modes = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
         if preset_modes_override is not None:
             self._preset_modes = preset_modes_override
 
         self._oscillate = None
+        self._natural_mode = False
+        self._speed = None
 
         self._state_attrs.update(
             {attribute: None for attribute in self._available_attributes}
@@ -1641,11 +1489,14 @@ class XiaomiFan1C(XiaomiFan):
 
             self._available = True
             self._oscillate = state.oscillate
+            self._natural_mode = state.mode == FanOperationMode.Nature
             self._state = state.is_on
-
-            for preset_mode, value in FAN_PRESET_MODES_1C.items():
-                if state.speed == value:
-                    self._preset_mode = preset_mode
+            self._speed = state.speed
+            self._preset_mode = (
+                FAN_PRESET_MODE_NATURAL
+                if self._natural_mode
+                else FAN_PRESET_MODE_STRAIGHT
+            )
 
             self._state_attrs.update(
                 {
@@ -1676,12 +1527,14 @@ class XiaomiFan1C(XiaomiFan):
     @property
     def percentage(self) -> int | None:
         """Return the current speed percentage."""
-        return ordered_list_item_to_percentage(FAN_SPEEDS_1C, self._preset_mode)
+        if self._speed is None:
+            return None
+        return ranged_value_to_percentage((1, 3), self._speed)
 
     @property
     def speed_count(self) -> int:
         """Return the number of speeds the fan supports."""
-        return len(FAN_SPEEDS_1C)
+        return 3
 
     @property
     def preset_modes(self):
@@ -1697,17 +1550,22 @@ class XiaomiFan1C(XiaomiFan):
         return None
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
-        """Set the preset mode of the fan."""
+        """Set the wind mode (Straight Wind / Natural Wind)."""
         _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
 
         if not self._state:
             await self._try_command(
                 "Turning the miio device on failed.", self._device.on
             )
+        mode = (
+            FanOperationMode.Nature
+            if preset_mode == FAN_PRESET_MODE_NATURAL
+            else FanOperationMode.Normal
+        )
         await self._try_command(
-            "Setting preset mode of the miio device failed.",
-            self._device.set_speed,
-            FAN_PRESET_MODES_1C[preset_mode],
+            "Setting fan mode of the miio device failed.",
+            self._device.set_mode,
+            mode,
         )
 
     async def async_set_percentage(self, percentage: int) -> None:
@@ -1722,12 +1580,11 @@ class XiaomiFan1C(XiaomiFan):
             await self._try_command(
                 "Turning the miio device on failed.", self._device.on
             )
+        level = math.ceil(percentage_to_ranged_value((1, 3), percentage))
         await self._try_command(
-            "Setting preset mode of the miio device failed.",
+            "Setting fan speed of the miio device failed.",
             self._device.set_speed,
-            FAN_PRESET_MODES_1C[
-                percentage_to_ordered_list_item(FAN_SPEEDS_1C, percentage)
-            ],
+            level,
         )
 
     @property
@@ -1801,7 +1658,7 @@ class XiaomiFanZA5(XiaomiFan):
 
         self._device_features = FEATURE_FLAGS_FAN_ZA5
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_ZA5
-        self._preset_modes = list(FAN_PRESET_MODES_ZA5)
+        self._preset_modes = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
         if preset_modes_override is not None:
             self._preset_modes = preset_modes_override
 
@@ -1832,14 +1689,15 @@ class XiaomiFanZA5(XiaomiFan):
             _LOGGER.debug("Got new state: %s", state)
 
             self._available = True
-            self._percentage = state.fan_speed
+            self._percentage = ranged_value_to_percentage((1, 4), state.fan_level)
             self._oscillate = state.swing_mode
-            self._natural_mode = state.mode == FanOperationMode.Nature
+            self._natural_mode = state.mode == OperationModeFanZA5.Nature.name
             self._state = state.power
-
-            for preset_mode, value in FAN_PRESET_MODES_ZA5.items():
-                if state.fan_level == value:
-                    self._preset_mode = preset_mode
+            self._preset_mode = (
+                FAN_PRESET_MODE_NATURAL
+                if self._natural_mode
+                else FAN_PRESET_MODE_STRAIGHT
+            )
 
             self._state_attrs.update(
                 {
@@ -1875,7 +1733,7 @@ class XiaomiFanZA5(XiaomiFan):
     @property
     def speed_count(self) -> int:
         """Return the number of speeds the fan supports."""
-        return 100
+        return 4
 
     @property
     def preset_modes(self):
@@ -1890,17 +1748,22 @@ class XiaomiFanZA5(XiaomiFan):
         return None
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
-        """Set the preset mode of the fan."""
+        """Set the wind mode (Straight Wind / Natural Wind)."""
         _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
 
         if not self._state:
             await self._try_command(
                 "Turning the miio device on failed.", self._device.on
             )
+        mode = (
+            FanOperationMode.Nature
+            if preset_mode == FAN_PRESET_MODE_NATURAL
+            else FanOperationMode.Normal
+        )
         await self._try_command(
-            "Setting preset mode of the miio device failed.",
-            self._device.set_speed,
-            FAN_PRESET_MODE_VALUES[preset_mode],
+            "Setting fan mode of the miio device failed.",
+            self._device.set_mode,
+            mode,
         )
 
     async def async_set_percentage(self, percentage: int) -> None:
@@ -1915,10 +1778,11 @@ class XiaomiFanZA5(XiaomiFan):
             await self._try_command(
                 "Turning the miio device on failed.", self._device.on
             )
+        level = math.ceil(percentage_to_ranged_value((1, 4), percentage))
         await self._try_command(
-            "Setting preset mode of the miio device failed.",
-            self._device.set_speed,
-            percentage,
+            "Setting fan level of the miio device failed.",
+            self._device.set_fan_level,
+            level,
         )
 
     async def async_oscillate(self, oscillating: bool) -> None:
@@ -2209,6 +2073,12 @@ class FanZA5(MiotDevice):
 
         return self.set_property("fan_speed", speed)
 
+    def set_fan_level(self, level: int):
+        """Set fan level (1-4)."""
+        if level not in [1, 2, 3, 4]:
+            raise FanException(f"Invalid fan level: {level}")
+        return self.set_property("fan_level", level)
+
     def set_angle(self, angle: int):
         """Set the oscillation angle."""
         if angle not in [30, 60, 90, 120]:
@@ -2273,7 +2143,7 @@ class XiaomiFanP33(XiaomiFanMiot):
         self._device_features = FEATURE_FLAGS_FAN_P33
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_P33
         self._percentage = None
-        self._preset_modes = list(FAN_PRESET_MODES_P33)
+        self._preset_modes = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
         if preset_modes_override is not None:
             self._preset_modes = preset_modes_override
 
@@ -2313,15 +2183,15 @@ class XiaomiFanP33(XiaomiFanMiot):
             _LOGGER.debug("Got new state: %s", state)
 
             self._available = True
-            self._percentage = state.percentage
+            self._percentage = ranged_value_to_percentage((1, 4), state.fan_level)
             self._oscillate = state.oscillate
-            self._natural_mode = state.mode == OperationModeFanP33.Nature
+            self._natural_mode = state.mode == OperationModeFanP33.Nature.name
             self._state = state.power
-
-            for preset_mode, value in FAN_PRESET_MODES_P33.items():
-                if state.fan_level == value:
-                    self._preset_mode = preset_mode
-                    break
+            self._preset_mode = (
+                FAN_PRESET_MODE_NATURAL
+                if self._natural_mode
+                else FAN_PRESET_MODE_STRAIGHT
+            )
 
             self._state_attrs.update(
                 {
@@ -2356,6 +2226,11 @@ class XiaomiFanP33(XiaomiFanMiot):
         return self._percentage
 
     @property
+    def speed_count(self) -> int:
+        """Return the number of speeds the fan supports."""
+        return 4
+
+    @property
     def preset_modes(self):
         """Return the list of available preset modes."""
         return self._preset_modes
@@ -2366,6 +2241,44 @@ class XiaomiFanP33(XiaomiFanMiot):
         if self._state:
             return self._preset_mode
         return None
+
+    async def async_set_preset_mode(self, preset_mode: str) -> None:
+        """Set the wind mode (Straight Wind / Natural Wind)."""
+        _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
+
+        if not self._state:
+            await self._try_command(
+                "Turning the miio device on failed.", self._device.on
+            )
+        mode = (
+            OperationModeFanP33.Nature
+            if preset_mode == FAN_PRESET_MODE_NATURAL
+            else OperationModeFanP33.Normal
+        )
+        await self._try_command(
+            "Setting fan mode of the miio device failed.",
+            self._device.set_mode,
+            mode,
+        )
+
+    async def async_set_percentage(self, percentage: int) -> None:
+        """Set the speed percentage of the fan."""
+        _LOGGER.debug("Setting the fan speed percentage to: %s", percentage)
+
+        if percentage == 0:
+            await self.async_turn_off()
+            return
+
+        if not self._state:
+            await self._try_command(
+                "Turning the miio device on failed.", self._device.on
+            )
+        level = math.ceil(percentage_to_ranged_value((1, 4), percentage))
+        await self._try_command(
+            "Setting fan level of the miio device failed.",
+            self._device.set_fan_level,
+            level,
+        )
 
     async def async_set_natural_mode_on(self):
         """Turn the natural mode on."""
@@ -2531,6 +2444,12 @@ class FanP33(MiotDevice):
 
         return self.set_property("fan_speed", percentage)
 
+    def set_fan_level(self, level: int):
+        """Set fan level (1-4)."""
+        if level not in [1, 2, 3, 4]:
+            raise FanException(f"Invalid fan level: {level}")
+        return self.set_property("fan_level", level)
+
     def set_angle(self, angle: int):
         """Set the oscillation angle."""
         if angle not in [30, 60, 90, 120, 140]:
@@ -2602,7 +2521,7 @@ class XiaomiFanP39(XiaomiFanMiot):
         self._device_features = FEATURE_FLAGS_FAN_P39
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_P39
         self._percentage = None
-        self._preset_modes = list(FAN_PRESET_MODES_P39)
+        self._preset_modes = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
         if preset_modes_override is not None:
             self._preset_modes = preset_modes_override
 
@@ -2637,15 +2556,15 @@ class XiaomiFanP39(XiaomiFanMiot):
             _LOGGER.debug("Got new state: %s", state)
 
             self._available = True
-            self._percentage = state.fan_speed
+            self._percentage = ranged_value_to_percentage((1, 4), state.fan_level)
             self._oscillate = state.oscillate
-            self._natural_mode = state.mode == OperationModeFanP39.Nature
+            self._natural_mode = state.mode == OperationModeFanP39.Nature.name
             self._state = state.power
-
-            for preset_mode, value in FAN_PRESET_MODES_P39.items():
-                if state.fan_level == value:
-                    self._preset_mode = preset_mode
-                    break
+            self._preset_mode = (
+                FAN_PRESET_MODE_NATURAL
+                if self._natural_mode
+                else FAN_PRESET_MODE_STRAIGHT
+            )
 
             self._state_attrs.update(
                 {
@@ -2680,6 +2599,11 @@ class XiaomiFanP39(XiaomiFanMiot):
         return self._percentage
 
     @property
+    def speed_count(self) -> int:
+        """Return the number of speeds the fan supports."""
+        return 4
+
+    @property
     def preset_modes(self):
         """Return the list of available preset modes."""
         return self._preset_modes
@@ -2690,6 +2614,44 @@ class XiaomiFanP39(XiaomiFanMiot):
         if self._state:
             return self._preset_mode
         return None
+
+    async def async_set_preset_mode(self, preset_mode: str) -> None:
+        """Set the wind mode (Straight Wind / Natural Wind)."""
+        _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
+
+        if not self._state:
+            await self._try_command(
+                "Turning the miio device on failed.", self._device.on
+            )
+        mode = (
+            OperationModeFanP39.Nature
+            if preset_mode == FAN_PRESET_MODE_NATURAL
+            else OperationModeFanP39.Normal
+        )
+        await self._try_command(
+            "Setting fan mode of the miio device failed.",
+            self._device.set_mode,
+            mode,
+        )
+
+    async def async_set_percentage(self, percentage: int) -> None:
+        """Set the speed percentage of the fan."""
+        _LOGGER.debug("Setting the fan speed percentage to: %s", percentage)
+
+        if percentage == 0:
+            await self.async_turn_off()
+            return
+
+        if not self._state:
+            await self._try_command(
+                "Turning the miio device on failed.", self._device.on
+            )
+        level = math.ceil(percentage_to_ranged_value((1, 4), percentage))
+        await self._try_command(
+            "Setting fan level of the miio device failed.",
+            self._device.set_fan_level,
+            level,
+        )
 
     async def async_set_natural_mode_on(self):
         """Turn the natural mode on."""
@@ -2837,6 +2799,12 @@ class FanP39(MiotDevice):
             raise FanException(f"Invalid speed: {speed}")
 
         return self.set_property("fan_speed", speed)
+
+    def set_fan_level(self, level: int):
+        """Set fan level (1-4)."""
+        if level not in [1, 2, 3, 4]:
+            raise FanException(f"Invalid fan level: {level}")
+        return self.set_property("fan_level", level)
 
     def set_angle(self, angle: int):
         """Set the oscillation angle."""
@@ -3125,7 +3093,11 @@ class XiaomiFanP45(XiaomiFanMiot):
         self._device_features = FEATURE_FLAGS_FAN_P45
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_P45
         self._percentage = None
-        self._preset_modes = list(FAN_PRESET_MODES_P45)
+        self._preset_modes = [
+            FAN_PRESET_MODE_STRAIGHT,
+            FAN_PRESET_MODE_NATURAL,
+            FAN_PRESET_MODE_SLEEP,
+        ]
         if preset_modes_override is not None:
             self._preset_modes = preset_modes_override
 
@@ -3160,22 +3132,21 @@ class XiaomiFanP45(XiaomiFanMiot):
             _LOGGER.debug("Got new state: %s", state)
 
             self._available = True
-            self._percentage = state.fan_speed
             self._oscillate = state.horizontal_swing
             self._natural_mode = state.mode == OperationModeFanP45.Natural.name
             self._state = state.power
 
+            if state.fan_level is not None:
+                self._percentage = ranged_value_to_percentage((1, 4), state.fan_level)
+            else:
+                self._percentage = None
+
             if state.mode == OperationModeFanP45.Sleep.name:
                 self._preset_mode = FAN_PRESET_MODE_SLEEP
+            elif self._natural_mode:
+                self._preset_mode = FAN_PRESET_MODE_NATURAL
             else:
-                self._preset_mode = None
-                for preset_mode, value in FAN_PRESET_MODES_P45.items():
-                    if preset_mode in (SPEED_OFF, FAN_PRESET_MODE_SLEEP):
-                        continue
-                    is_natural = preset_mode.startswith("Natural")
-                    if state.fan_level == value and is_natural == self._natural_mode:
-                        self._preset_mode = preset_mode
-                        break
+                self._preset_mode = FAN_PRESET_MODE_STRAIGHT
 
             self._state_attrs.update(
                 {
@@ -3210,6 +3181,11 @@ class XiaomiFanP45(XiaomiFanMiot):
         return self._percentage
 
     @property
+    def speed_count(self) -> int:
+        """Return the number of speeds the fan supports."""
+        return 4
+
+    @property
     def preset_modes(self):
         """Return the list of available preset modes."""
         return self._preset_modes
@@ -3222,15 +3198,8 @@ class XiaomiFanP45(XiaomiFanMiot):
         return None
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
-        """Set preset mode.
-
-        Combines level (1..4) with Straight/Natural mode, or selects standalone Sleep mode.
-        """
+        """Set the preset mode of the fan."""
         _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
-
-        if preset_mode == SPEED_OFF:
-            await self.async_turn_off()
-            return
 
         if not self._state:
             await self._try_command(
@@ -3238,23 +3207,15 @@ class XiaomiFanP45(XiaomiFanMiot):
             )
 
         if preset_mode == FAN_PRESET_MODE_SLEEP:
-            await self._try_command(
-                "Setting fan mode failed.",
-                self._device.set_mode,
-                OperationModeFanP45.Sleep,
-            )
-            return
-
-        natural = preset_mode.startswith("Natural")
+            mode = OperationModeFanP45.Sleep
+        elif preset_mode == FAN_PRESET_MODE_NATURAL:
+            mode = OperationModeFanP45.Natural
+        else:
+            mode = OperationModeFanP45.Straight
         await self._try_command(
             "Setting fan mode failed.",
             self._device.set_mode,
-            OperationModeFanP45.Natural if natural else OperationModeFanP45.Straight,
-        )
-        await self._try_command(
-            "Setting fan level of the miio device failed.",
-            self._device.set_fan_level,
-            FAN_PRESET_MODES_P45[preset_mode],
+            mode,
         )
 
     async def async_set_percentage(self, percentage: int) -> None:
@@ -3270,10 +3231,11 @@ class XiaomiFanP45(XiaomiFanMiot):
                 "Turning the miio device on failed.", self._device.on
             )
 
+        level = math.ceil(percentage_to_ranged_value((1, 4), percentage))
         await self._try_command(
-            "Setting fan speed percentage of the miio device failed.",
-            self._device.set_speed,
-            percentage,
+            "Setting fan level of the miio device failed.",
+            self._device.set_fan_level,
+            level,
         )
 
     async def async_set_natural_mode_on(self):
@@ -3556,7 +3518,7 @@ class XiaomiFanP76(XiaomiFanP33):
         self._device_features = FEATURE_FLAGS_FAN_P76
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_P76
         self._percentage = None
-        self._preset_modes = list(FAN_PRESET_MODES_P76)
+        self._preset_modes = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
         if preset_modes_override is not None:
             self._preset_modes = preset_modes_override
 
@@ -3610,19 +3572,22 @@ class XiaomiFanP76(XiaomiFanP33):
             _LOGGER.debug("Got new state: %s", state)
 
             self._available = True
-            self._percentage = state.fan_speed
             self._oscillate = state.horizontal_swing
             self._vertical_oscillate = state.vertical_swing
             self._natural_mode = state.mode == OperationModeFanP76.Natural.name
             self._state = state.power
+            self._preset_mode = (
+                FAN_PRESET_MODE_NATURAL
+                if self._natural_mode
+                else FAN_PRESET_MODE_STRAIGHT
+            )
 
-            for preset_mode, value in FAN_PRESET_MODES_P76.items():
-                if preset_mode == SPEED_OFF:
-                    continue
-                is_natural = preset_mode.startswith("Natural")
-                if state.fan_level == value and is_natural == self._natural_mode:
-                    self._preset_mode = preset_mode
-                    break
+            if state.fan_level is not None:
+                self._percentage = ranged_value_to_percentage(
+                    (1, 4), state.fan_level + 1
+                )
+            else:
+                self._percentage = None
 
             self._state_attrs.update(
                 {
@@ -3651,29 +3616,29 @@ class XiaomiFanP76(XiaomiFanP33):
                     self._retry,
                 )
 
+    @property
+    def speed_count(self) -> int:
+        """Return the number of speeds the fan supports."""
+        return 4
+
     async def async_set_preset_mode(self, preset_mode: str) -> None:
         """Set the preset mode of the fan."""
         _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
-
-        if preset_mode == SPEED_OFF:
-            await self.async_turn_off()
-            return
 
         if not self._state:
             await self._try_command(
                 "Turning the miio device on failed.", self._device.on
             )
 
-        natural = preset_mode.startswith("Natural")
+        mode = (
+            OperationModeFanP76.Natural
+            if preset_mode == FAN_PRESET_MODE_NATURAL
+            else OperationModeFanP76.Straight
+        )
         await self._try_command(
             "Setting fan mode failed.",
             self._device.set_mode,
-            OperationModeFanP76.Natural if natural else OperationModeFanP76.Straight,
-        )
-        await self._try_command(
-            "Setting fan level of the miio device failed.",
-            self._device.set_fan_level,
-            FAN_PRESET_MODES_P76[preset_mode],
+            mode,
         )
 
     async def async_set_percentage(self, percentage: int) -> None:
@@ -3688,10 +3653,12 @@ class XiaomiFanP76(XiaomiFanP33):
             await self._try_command(
                 "Turning the miio device on failed.", self._device.on
             )
+
+        level = math.ceil(percentage_to_ranged_value((1, 4), percentage)) - 1
         await self._try_command(
-            "Setting fan speed percentage of the miio device failed.",
-            self._device.set_speed,
-            percentage,
+            "Setting fan level of the miio device failed.",
+            self._device.set_fan_level,
+            level,
         )
 
     async def async_set_natural_mode_on(self):
@@ -3996,7 +3963,7 @@ class XiaomiFanXiaomiP30(XiaomiFanP33):
         self._device_features = FEATURE_FLAGS_FAN_XIAOMI_P30
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_XIAOMI_P30
         self._percentage = None
-        self._preset_modes = list(FAN_PRESET_MODES_XIAOMI_P30)
+        self._preset_modes = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
         if preset_modes_override is not None:
             self._preset_modes = preset_modes_override
 
@@ -4030,18 +3997,19 @@ class XiaomiFanXiaomiP30(XiaomiFanP33):
             _LOGGER.debug("Got new state: %s", state)
 
             self._available = True
-            self._percentage = state.fan_speed
             self._oscillate = state.horizontal_swing
             self._natural_mode = state.mode == OperationModeFanXiaomiP30.Nature.name
             self._state = state.power
+            self._preset_mode = (
+                FAN_PRESET_MODE_NATURAL
+                if self._natural_mode
+                else FAN_PRESET_MODE_STRAIGHT
+            )
 
-            for preset_mode, value in FAN_PRESET_MODES_XIAOMI_P30.items():
-                if preset_mode == SPEED_OFF:
-                    continue
-                is_natural = preset_mode.startswith("Natural")
-                if state.fan_level == value and is_natural == self._natural_mode:
-                    self._preset_mode = preset_mode
-                    break
+            if state.fan_level is not None:
+                self._percentage = ranged_value_to_percentage((1, 4), state.fan_level)
+            else:
+                self._percentage = None
 
             self._state_attrs.update(
                 {
@@ -4070,31 +4038,29 @@ class XiaomiFanXiaomiP30(XiaomiFanP33):
                     self._retry,
                 )
 
+    @property
+    def speed_count(self) -> int:
+        """Return the number of speeds the fan supports."""
+        return 4
+
     async def async_set_preset_mode(self, preset_mode: str) -> None:
         """Set the preset mode of the fan."""
         _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
-
-        if preset_mode == SPEED_OFF:
-            await self.async_turn_off()
-            return
 
         if not self._state:
             await self._try_command(
                 "Turning the miio device on failed.", self._device.on
             )
 
-        natural = preset_mode.startswith("Natural")
+        mode = (
+            OperationModeFanXiaomiP30.Nature
+            if preset_mode == FAN_PRESET_MODE_NATURAL
+            else OperationModeFanXiaomiP30.Normal
+        )
         await self._try_command(
             "Setting fan mode failed.",
             self._device.set_mode,
-            OperationModeFanXiaomiP30.Nature
-            if natural
-            else OperationModeFanXiaomiP30.Normal,
-        )
-        await self._try_command(
-            "Setting fan level of the miio device failed.",
-            self._device.set_fan_level,
-            FAN_PRESET_MODES_XIAOMI_P30[preset_mode],
+            mode,
         )
 
     async def async_set_percentage(self, percentage: int) -> None:
@@ -4109,10 +4075,12 @@ class XiaomiFanXiaomiP30(XiaomiFanP33):
             await self._try_command(
                 "Turning the miio device on failed.", self._device.on
             )
+
+        level = math.ceil(percentage_to_ranged_value((1, 4), percentage))
         await self._try_command(
-            "Setting fan speed percentage of the miio device failed.",
-            self._device.set_speed,
-            percentage,
+            "Setting fan level of the miio device failed.",
+            self._device.set_fan_level,
+            level,
         )
 
     async def async_set_natural_mode_on(self):
@@ -4401,7 +4369,7 @@ class XiaomiFanP70(XiaomiFanP33):
         self._device_features = FEATURE_FLAGS_FAN_P70
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_P70
         self._percentage = None
-        self._preset_modes = list(FAN_PRESET_MODES_P70)
+        self._preset_modes = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
         if preset_modes_override is not None:
             self._preset_modes = preset_modes_override
 
@@ -4455,16 +4423,22 @@ class XiaomiFanP70(XiaomiFanP33):
             _LOGGER.debug("Got new state: %s", state)
 
             self._available = True
-            self._percentage = state.fan_speed
             self._oscillate = state.horizontal_swing
             self._vertical_oscillate = state.vertical_swing
             self._natural_mode = state.mode == OperationModeFanP70.Natural.name
             self._state = state.power
+            self._preset_mode = (
+                FAN_PRESET_MODE_NATURAL
+                if self._natural_mode
+                else FAN_PRESET_MODE_STRAIGHT
+            )
 
-            for preset_mode, value in FAN_PRESET_MODES_P70.items():
-                if state.fan_level == value:
-                    self._preset_mode = preset_mode
-                    break
+            if state.fan_level is not None:
+                self._percentage = ranged_value_to_percentage(
+                    (1, 4), state.fan_level + 1
+                )
+            else:
+                self._percentage = None
 
             self._state_attrs.update(
                 {
@@ -4493,22 +4467,29 @@ class XiaomiFanP70(XiaomiFanP33):
                     self._retry,
                 )
 
+    @property
+    def speed_count(self) -> int:
+        """Return the number of speeds the fan supports."""
+        return 4
+
     async def async_set_preset_mode(self, preset_mode: str) -> None:
         """Set the preset mode of the fan."""
         _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
-
-        if preset_mode == SPEED_OFF:
-            await self.async_turn_off()
-            return
 
         if not self._state:
             await self._try_command(
                 "Turning the miio device on failed.", self._device.on
             )
+
+        mode = (
+            OperationModeFanP70.Natural
+            if preset_mode == FAN_PRESET_MODE_NATURAL
+            else OperationModeFanP70.Straight
+        )
         await self._try_command(
-            "Setting fan level of the miio device failed.",
-            self._device.set_fan_level,
-            FAN_PRESET_MODES_P70[preset_mode],
+            "Setting fan mode failed.",
+            self._device.set_mode,
+            mode,
         )
 
     async def async_set_percentage(self, percentage: int) -> None:
@@ -4523,10 +4504,12 @@ class XiaomiFanP70(XiaomiFanP33):
             await self._try_command(
                 "Turning the miio device on failed.", self._device.on
             )
+
+        level = math.ceil(percentage_to_ranged_value((1, 4), percentage)) - 1
         await self._try_command(
-            "Setting fan speed percentage of the miio device failed.",
-            self._device.set_speed,
-            percentage,
+            "Setting fan level of the miio device failed.",
+            self._device.set_fan_level,
+            level,
         )
 
     async def async_set_natural_mode_on(self):
@@ -4759,7 +4742,7 @@ class XiaomiFan2Lite(XiaomiFanP33):
         self._device_features = FEATURE_FLAGS_FAN_2LITE
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_2LITE
         self._percentage = None
-        self._preset_modes = list(FAN_PRESET_MODES_2LITE)
+        self._preset_modes = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
         if preset_modes_override is not None:
             self._preset_modes = preset_modes_override
 
@@ -4802,7 +4785,11 @@ class XiaomiFan2Lite(XiaomiFanP33):
             self._oscillate = state.horizontal_swing
             self._natural_mode = state.mode == OperationModeFan2Lite.Natural.name
             self._state = state.power
-            self._preset_mode = FAN_PRESET_MODE_SLEEP if self._natural_mode else None
+            self._preset_mode = (
+                FAN_PRESET_MODE_NATURAL
+                if self._natural_mode
+                else FAN_PRESET_MODE_STRAIGHT
+            )
 
             if state.fan_level is None:
                 self._percentage = None
@@ -4857,12 +4844,6 @@ class XiaomiFan2Lite(XiaomiFanP33):
             await self._try_command(
                 "Turning the miio device on failed.", self._device.on
             )
-        if self._natural_mode:
-            await self._try_command(
-                "Setting fan mode of the miio device failed.",
-                self._device.set_mode,
-                OperationModeFan2Lite.Straight,
-            )
         await self._try_command(
             "Setting fan level of the miio device failed.",
             self._device.set_fan_level,
@@ -4880,7 +4861,7 @@ class XiaomiFan2Lite(XiaomiFanP33):
 
         mode = (
             OperationModeFan2Lite.Natural
-            if preset_mode == FAN_PRESET_MODE_SLEEP
+            if preset_mode == FAN_PRESET_MODE_NATURAL
             else OperationModeFan2Lite.Straight
         )
         await self._try_command(
@@ -5001,7 +4982,7 @@ class XiaomiFanP85(XiaomiFanP33):
         self._device_features = FEATURE_FLAGS_FAN_P85
         self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_P85
         self._percentage = None
-        self._preset_modes = list(FAN_PRESET_MODES_P85)
+        self._preset_modes = [FAN_PRESET_MODE_STRAIGHT, FAN_PRESET_MODE_NATURAL]
         if preset_modes_override is not None:
             self._preset_modes = preset_modes_override
 
@@ -5036,18 +5017,19 @@ class XiaomiFanP85(XiaomiFanP33):
             _LOGGER.debug("Got new state: %s", state)
 
             self._available = True
-            self._percentage = state.fan_speed
             self._oscillate = state.horizontal_swing
             self._natural_mode = state.mode == OperationModeFanP85.Natural.name
             self._state = state.power
+            self._preset_mode = (
+                FAN_PRESET_MODE_NATURAL
+                if self._natural_mode
+                else FAN_PRESET_MODE_STRAIGHT
+            )
 
-            for preset_mode, value in FAN_PRESET_MODES_P85.items():
-                if preset_mode == SPEED_OFF:
-                    continue
-                is_natural = preset_mode.startswith("Natural")
-                if state.fan_level == value and is_natural == self._natural_mode:
-                    self._preset_mode = preset_mode
-                    break
+            if state.fan_level is not None:
+                self._percentage = ranged_value_to_percentage((1, 4), state.fan_level)
+            else:
+                self._percentage = None
 
             self._state_attrs.update(
                 {
@@ -5076,11 +5058,36 @@ class XiaomiFanP85(XiaomiFanP33):
                     self._retry,
                 )
 
+    @property
+    def speed_count(self) -> int:
+        """Return the number of speeds the fan supports."""
+        return 4
+
     async def async_set_preset_mode(self, preset_mode: str) -> None:
         """Set the preset mode of the fan."""
         _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
 
-        if preset_mode == SPEED_OFF:
+        if not self._state:
+            await self._try_command(
+                "Turning the miio device on failed.", self._device.on
+            )
+
+        mode = (
+            OperationModeFanP85.Natural
+            if preset_mode == FAN_PRESET_MODE_NATURAL
+            else OperationModeFanP85.Straight
+        )
+        await self._try_command(
+            "Setting fan mode failed.",
+            self._device.set_mode,
+            mode,
+        )
+
+    async def async_set_percentage(self, percentage: int) -> None:
+        """Set the speed percentage of the fan."""
+        _LOGGER.debug("Setting the fan speed percentage to: %s", percentage)
+
+        if percentage == 0:
             await self.async_turn_off()
             return
 
@@ -5089,16 +5096,11 @@ class XiaomiFanP85(XiaomiFanP33):
                 "Turning the miio device on failed.", self._device.on
             )
 
-        natural = preset_mode.startswith("Natural")
-        await self._try_command(
-            "Setting fan mode failed.",
-            self._device.set_mode,
-            OperationModeFanP85.Natural if natural else OperationModeFanP85.Straight,
-        )
+        level = math.ceil(percentage_to_ranged_value((1, 4), percentage))
         await self._try_command(
             "Setting fan level of the miio device failed.",
             self._device.set_fan_level,
-            FAN_PRESET_MODES_P85[preset_mode],
+            level,
         )
 
     async def async_set_natural_mode_on(self):

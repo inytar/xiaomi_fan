@@ -1,11 +1,12 @@
 """Switch platform for Xiaomi Fan toggles (child lock, buzzer)."""
+
 import logging
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.const import CONF_HOST
 from homeassistant.helpers.entity import EntityCategory
 
-from .const import DATA_KEY, DOMAIN
+from .const import DATA_KEY
 from .fan import (
     ATTR_BUZZER,
     ATTR_CHILD_LOCK,
