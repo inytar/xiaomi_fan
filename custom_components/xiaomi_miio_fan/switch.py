@@ -9,7 +9,9 @@ from .const import DATA_KEY, DOMAIN
 from .fan import (
     ATTR_BUZZER,
     ATTR_CHILD_LOCK,
+    ATTR_IONIZER,
     ATTR_VERTICAL_OSCILLATE,
+    FEATURE_SET_ANION,
     FEATURE_SET_BUZZER,
     FEATURE_SET_CHILD_LOCK,
     FEATURE_SET_VERTICAL_OSCILLATION,
@@ -33,6 +35,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
         entities.append(XiaomiFanBuzzerSwitch(fan_entity))
     if fan_entity._device_features & FEATURE_SET_VERTICAL_OSCILLATION:
         entities.append(XiaomiFanVerticalOscillateSwitch(fan_entity))
+    if fan_entity._device_features & FEATURE_SET_ANION:
+        entities.append(XiaomiFanIonizerSwitch(fan_entity))
 
     async_add_entities(entities)
 
@@ -117,4 +121,29 @@ class XiaomiFanVerticalOscillateSwitch(_XiaomiFanToggleSwitch):
 
     async def async_turn_off(self, **kwargs):
         await self._fan_entity.async_set_vertical_oscillation_off()
+        self.async_write_ha_state()
+
+
+class XiaomiFanIonizerSwitch(_XiaomiFanToggleSwitch):
+    """Switch entity for the fan's ionizer."""
+
+    _attr_translation_key = "ionizer"
+
+    def __init__(self, fan_entity):
+        """Initialize the ionizer switch."""
+        super().__init__(fan_entity, "ionizer")
+
+    @property
+    def is_on(self):
+        """Return the ionizer state."""
+        return self._fan_entity._state_attrs.get(ATTR_IONIZER)
+
+    async def async_turn_on(self, **kwargs):
+        """Turn the ionizer on."""
+        await self._fan_entity.async_set_anion_on()
+        self.async_write_ha_state()
+
+    async def async_turn_off(self, **kwargs):
+        """Turn the ionizer off."""
+        await self._fan_entity.async_set_anion_off()
         self.async_write_ha_state()

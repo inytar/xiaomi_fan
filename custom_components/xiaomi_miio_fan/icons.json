@@ -18,6 +18,9 @@
         "state": {
           "off": "mdi:arrow-collapse-vertical"
         }
+      },
+      "ionizer": {
+        "default": "mdi:air-filter"
       }
     },
     "select": {

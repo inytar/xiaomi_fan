@@ -30,6 +30,9 @@
       },
       "vertical_oscillate": {
         "name": "Vertical oscillation"
+      },
+      "ionizer": {
+        "name": "Ionizer"
       }
     },
     "select": {
