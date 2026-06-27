@@ -31,6 +31,33 @@
       "vertical_oscillate": {
         "name": "Vertical oscillation"
       }
+    },
+    "select": {
+      "oscillation_angle": {
+        "name": "Oscillation angle",
+        "state": {
+          "30": "30°",
+          "60": "60°",
+          "90": "90°",
+          "120": "120°",
+          "140": "140°",
+          "150": "150°"
+        }
+      },
+      "vertical_oscillation_angle": {
+        "name": "Vertical oscillation angle",
+        "state": {
+          "30": "30°",
+          "60": "60°",
+          "90": "90°",
+          "100": "100°"
+        }
+      }
+    },
+    "light": {
+      "led": {
+        "name": "Control lights"
+      }
     }
   },
   "options": {
