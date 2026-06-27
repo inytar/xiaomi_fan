@@ -895,6 +895,8 @@ class XiaomiGenericDevice(FanEntity):
     """Representation of a generic Xiaomi device."""
 
     _enable_turn_on_off_backwards_compatibility = False
+    _oscillation_angle_options: list = [30, 60, 90, 120]
+    _vertical_oscillation_angle_options: list = []
 
     def __init__(self, name, device, model, unique_id, retries, preset_modes_override):
         """Initialize the generic Xiaomi device."""
@@ -2265,6 +2267,8 @@ class FanZA5(MiotDevice):
 class XiaomiFanP33(XiaomiFanMiot):
     """Representation of a Xiaomi Fan P33."""
 
+    _oscillation_angle_options = [30, 60, 90, 120, 140]
+
     def __init__(self, name, device, model, unique_id, retries, preset_modes_override):
         """Initialize the fan entity."""
         super().__init__(name, device, model, unique_id, retries, preset_modes_override)
@@ -2591,6 +2595,8 @@ class FanP33(MiotDevice):
 
 class XiaomiFanP39(XiaomiFanMiot):
     """Representation of a Xiaomi Fan P39."""
+
+    _oscillation_angle_options = [30, 60, 90, 120, 140]
 
     def __init__(self, name, device, model, unique_id, retries, preset_modes_override):
         """Initialize the fan entity."""
@@ -3113,6 +3119,8 @@ class FanP45(MiotDevice):
 class XiaomiFanP45(XiaomiFanMiot):
     """Representation of the Xiaomi Smart Tower Fan 2 (xiaomi.fan.p45)."""
 
+    _oscillation_angle_options = [30, 60, 90, 120, 150]
+
     def __init__(self, name, device, model, unique_id, retries, preset_modes_override):
         """Initialize the fan entity."""
         super().__init__(name, device, model, unique_id, retries, preset_modes_override)
@@ -3540,6 +3548,9 @@ class FanP76(MiotDevice):
 
 class XiaomiFanP76(XiaomiFanP33):
     """Representation of a Xiaomi Fan P76."""
+
+    _oscillation_angle_options = [30, 60, 90, 120]
+    _vertical_oscillation_angle_options = [30, 60, 90, 100]
 
     def __init__(self, name, device, model, unique_id, retries, preset_modes_override):
         """Initialize the fan entity."""
@@ -3979,6 +3990,8 @@ class FanXiaomiP30(MiotDevice):
 class XiaomiFanXiaomiP30(XiaomiFanP33):
     """Representation of the Xiaomi Fan P30 (xiaomi.fan.p30)."""
 
+    _oscillation_angle_options = [30, 60, 90, 120, 140]
+
     def __init__(self, name, device, model, unique_id, retries, preset_modes_override):
         """Initialize the fan entity."""
         super().__init__(name, device, model, unique_id, retries, preset_modes_override)
@@ -4380,6 +4393,9 @@ class FanP70(MiotDevice):
 
 class XiaomiFanP70(XiaomiFanP33):
     """Representation of a Xiaomi Smart Desktop Air Circulation Fan P70."""
+
+    _oscillation_angle_options = [30, 60, 90, 120]
+    _vertical_oscillation_angle_options = [30, 60, 90, 100]
 
     def __init__(self, name, device, model, unique_id, retries, preset_modes_override):
         """Initialize the fan entity."""
@@ -4978,6 +4994,8 @@ class FanP85(FanP70):
 
 class XiaomiFanP85(XiaomiFanP33):
     """Representation of a Xiaomi Fan P85 (Xiaomi Smart Standing Fan Pro Slim)."""
+
+    _oscillation_angle_options = [30, 60, 90]
 
     def __init__(self, name, device, model, unique_id, retries, preset_modes_override):
         """Initialize the fan entity."""

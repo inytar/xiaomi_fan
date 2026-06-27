@@ -42,6 +42,14 @@
       "vertical_oscillate": {
         "name": "Vertical oscillation"
       }
+    },
+    "select": {
+      "oscillation_angle": {
+        "name": "Oscillation angle"
+      },
+      "vertical_oscillation_angle": {
+        "name": "Vertical oscillation angle"
+      }
     }
   },
   "services": {

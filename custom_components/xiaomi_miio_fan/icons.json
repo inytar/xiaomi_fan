@@ -19,6 +19,14 @@
           "off": "mdi:arrow-collapse-vertical"
         }
       }
+    },
+    "select": {
+      "oscillation_angle": {
+        "default": "mdi:angle-acute"
+      },
+      "vertical_oscillation_angle": {
+        "default": "mdi:angle-acute"
+      }
     }
   }
 }
