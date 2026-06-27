@@ -8,10 +8,13 @@ from homeassistant.const import CONF_HOST
 from .const import DATA_KEY
 from .fan import (
     ATTR_ANGLE,
+    ATTR_DELAY_OFF_COUNTDOWN,
     ATTR_VERTICAL_ANGLE,
     FEATURE_SET_OSCILLATION_ANGLE,
     FEATURE_SET_VERTICAL_OSCILLATION_ANGLE,
 )
+
+_DELAY_OFF_OPTIONS = [0, 60, 120, 180, 240, 300, 360, 420, 480]
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -29,6 +32,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
         entities.append(XiaomiFanOscillationAngleSelect(fan_entity))
     if fan_entity._device_features & FEATURE_SET_VERTICAL_OSCILLATION_ANGLE:
         entities.append(XiaomiFanVerticalOscillationAngleSelect(fan_entity))
+    if ATTR_DELAY_OFF_COUNTDOWN in fan_entity._available_attributes:
+        entities.append(XiaomiFanDelayOffSelect(fan_entity))
 
     async_add_entities(entities)
 
@@ -100,4 +105,29 @@ class XiaomiFanVerticalOscillationAngleSelect(_XiaomiFanAngleSelect):
     async def async_select_option(self, option: str) -> None:
         """Set the vertical oscillation angle."""
         await self._fan_entity.async_set_vertical_oscillation_angle(int(option))
+        self.async_write_ha_state()
+
+
+class XiaomiFanDelayOffSelect(_XiaomiFanAngleSelect):
+    """Select entity for the fan's delay-off timer."""
+
+    _attr_translation_key = "delay_off"
+
+    def __init__(self, fan_entity):
+        """Initialize the delay-off select."""
+        super().__init__(fan_entity, "delay_off")
+        self._attr_options = [str(m) for m in _DELAY_OFF_OPTIONS]
+
+    @property
+    def current_option(self):
+        """Return the currently configured delay-off value."""
+        minutes = self._fan_entity._state_attrs.get(ATTR_DELAY_OFF_COUNTDOWN)
+        if minutes is None:
+            return None
+        value = str(minutes)
+        return value if value in self._attr_options else None
+
+    async def async_select_option(self, option: str) -> None:
+        """Set the delay-off timer."""
+        await self._fan_entity.async_set_delay_off(int(option))
         self.async_write_ha_state()

@@ -26,6 +26,12 @@
       },
       "vertical_oscillation_angle": {
         "default": "mdi:angle-acute"
+      },
+      "delay_off": {
+        "default": "mdi:timer-off-outline",
+        "state": {
+          "0": "mdi:timer-off-outline"
+        }
       }
     },
     "light": {
