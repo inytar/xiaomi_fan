@@ -1,0 +1,24 @@
+{
+  "entity": {
+    "switch": {
+      "child_lock": {
+        "default": "mdi:account-lock",
+        "state": {
+          "off": "mdi:account-lock-open"
+        }
+      },
+      "buzzer": {
+        "default": "mdi:volume-high",
+        "state": {
+          "off": "mdi:volume-off"
+        }
+      },
+      "vertical_oscillate": {
+        "default": "mdi:swap-vertical",
+        "state": {
+          "off": "mdi:arrow-collapse-vertical"
+        }
+      }
+    }
+  }
+}

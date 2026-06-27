@@ -3,6 +3,7 @@ import logging
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.const import CONF_HOST
+from homeassistant.helpers.entity import EntityCategory
 
 from .const import DATA_KEY, DOMAIN
 from .fan import (
@@ -57,6 +58,7 @@ class _XiaomiFanToggleSwitch(SwitchEntity):
 class XiaomiFanChildLockSwitch(_XiaomiFanToggleSwitch):
     """Switch entity for the fan's child lock."""
 
+    _attr_entity_category = EntityCategory.CONFIG
     _attr_translation_key = "child_lock"
 
     def __init__(self, fan_entity):
@@ -78,6 +80,7 @@ class XiaomiFanChildLockSwitch(_XiaomiFanToggleSwitch):
 class XiaomiFanBuzzerSwitch(_XiaomiFanToggleSwitch):
     """Switch entity for the fan's buzzer."""
 
+    _attr_entity_category = EntityCategory.CONFIG
     _attr_translation_key = "buzzer"
 
     def __init__(self, fan_entity):
